@@ -1,15 +1,21 @@
 package com.talev.words;
 
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
 
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+import org.xmlpull.v1.XmlPullParserFactory;
+
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -18,6 +24,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -33,27 +41,86 @@ public class MainActivity extends AppCompatActivity {
 
         tvWord = (TextView) findViewById(R.id.word);
 
-        File file = new File(getFilesDir(), "test.txt");
-        OutputStream outputStream = null;
-        try {
-            outputStream = openFileOutput("text.txt", Context.MODE_PRIVATE);
+        tvWord.setText(String.valueOf("TEST"));
 
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                outputStream.flush();
-                outputStream.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        tvWord.setText(String.valueOf(file.getName()));
-
-        Log.d(TAG, String.valueOf(file.isFile()));
         new DownloadFile().execute();
-//        tvWord.setText(readFile());
+
+        XmlPullParserFactory pullParserFactory;
+        try {
+            pullParserFactory = XmlPullParserFactory.newInstance();
+//            pullParserFactory.setNamespaceAware(true);
+            XmlPullParser parser = pullParserFactory.newPullParser();
+
+//            InputStream in_s = getApplicationContext().getAssets().open(KEY_FILE_NAME);
+            /*Context context = this;
+            AssetManager assManager = context.getAssets();
+            InputStream in_s = assManager.open("MyNewWord.kvtml");*/
+
+            File file = new File(getFilesDir(), KEY_FILE_NAME);
+            InputStream in_s = new FileInputStream(file);
+            parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
+            parser.setInput(in_s, null);
+
+//            Log.d(TAG, String.valueOf(parser.getLineNumber()));
+            Log.d(TAG, "GO GO GO!!!");
+
+            List<String> list = new ArrayList<>();
+            String text = null;
+
+            int eventType = parser.getEventType();
+            while (eventType != XmlPullParser.END_DOCUMENT) {
+
+                String name = parser.getName();
+
+                switch (eventType) {
+                    case XmlPullParser.START_TAG:
+                        break;
+
+                    case XmlPullParser.TEXT:
+                            Log.d(TAG, "getText: " + String.valueOf(parser.getText()));
+                            text = parser.getText();
+                        break;
+
+                    case XmlPullParser.END_TAG:
+//                        Log.d(TAG, "getName: " + parser.getPrefix());
+                        if (name.equals("translation")) {
+//                            Log.d(TAG, String.valueOf(parser.getAttributeValue(null, "id")));
+//                            temperature = parser.getAttributeValue(null,"value");
+//                            Log.d(TAG, "text" + text);
+//                            Log.d(TAG, "getText: " + parser.getText());
+
+                        }
+                        break;
+                }
+                eventType = parser.next();
+            }
+
+/*                if(eventType == XmlPullParser.START_DOCUMENT) {
+
+//                        Log.d(TAG, String.valueOf(parser.getText()));
+//                    Log.d("dimko", "Start document");
+                } else if(eventType == XmlPullParser.START_TAG) {
+//                    Log.d("dimko", "Start tag " + parser.getName());
+                    if (parser.getName().equals("text")) {
+                        list.add(parser.getText());
+                    }
+                } else if(eventType == XmlPullParser.END_TAG) {
+//                    Log.d(TAG, "End tag " + parser.getName());
+                } else if(eventType == XmlPullParser.TEXT) {
+//                    tvWord.setText(parser.getText());
+
+//                    Log.d(TAG, "Text " + parser.getText());
+                }
+                eventType = parser.next();
+            }
+            Log.d(TAG, "End document");
+            tvWord.setText(list.toString());*/
+
+        } catch (XmlPullParserException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public String readFile() {
