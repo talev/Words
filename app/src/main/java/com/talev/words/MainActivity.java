@@ -6,6 +6,8 @@ import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -29,10 +31,11 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    public static final String KEY_URL = "http://192.168.1.30/MyNewWord.kvtml";
+    public static final String KEY_URL = "http://80.72.69.142/MyNewWord.kvtml";
     public static final String KEY_FILE_NAME = "MyNewWord.kvtml";
     public static final String TAG = "dimko";
     private TextView tvWord;
+    private Button btnDownload;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,10 +43,18 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         tvWord = (TextView) findViewById(R.id.word);
+        btnDownload = (Button) findViewById(R.id.btn_download);
 
-        tvWord.setText(String.valueOf("TEST"));
+        tvWord.setText(String.valueOf(""));
+        btnDownload.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new DownloadFile().execute();
+                tvWord.setText("File from server is download");
+            }
+        });
 
-        new DownloadFile().execute();
+
 
         XmlPullParserFactory pullParserFactory;
         try {
@@ -62,7 +73,6 @@ public class MainActivity extends AppCompatActivity {
             parser.setInput(in_s, null);
 
 //            Log.d(TAG, String.valueOf(parser.getLineNumber()));
-            Log.d(TAG, "GO GO GO!!!");
 
             List<String> list = new ArrayList<>();
             String text = null;
