@@ -1,14 +1,23 @@
 package com.talev.words;
 
-import android.app.DownloadManager;
-
 import java.util.List;
+
+import org.simpleframework.xml.Element;
+import org.simpleframework.xml.ElementList;
+import org.simpleframework.xml.Root;
 
 /**
  * Created by Dimko Talev on 30.06.2016 г.
  */
+@Root
 public class OpenSearchDescription {
-    public DownloadManager.Query query;
+
+    @Element(name = "Query")
+    public Query query;
+
+    @Element
     public int totalResults;
+
+    @ElementList
     public List<Move> movies;
 }
