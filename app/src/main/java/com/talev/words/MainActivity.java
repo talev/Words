@@ -89,17 +89,21 @@ public class MainActivity extends AppCompatActivity {
 
     public void testSimpleFrameWork() {
         try {
-            String xmlData = retrieve(url);
+//            String xmlData = retrieve(url);
+            String xmlData = new TestDownloadFile().execute().get();
             Serializer serializer = new Persister();
-            Reader reader = new StringReader(xmlData);
-            OpenSearchDescription osd =
-                    serializer.read(OpenSearchDescription.class, reader, false);
-            Log.d(MainActivity.class.getSimpleName(), osd.toString());
+            if (xmlData != null) {
+                Reader reader = new StringReader(xmlData);
+                OpenSearchDescription osd =
+                        serializer.read(OpenSearchDescription.class, reader, false);
+                Log.d(MainActivity.class.getSimpleName(), osd.toString());
+            }
         } catch (Exception e) {
             Toast.makeText(this, "Error Occured", Toast.LENGTH_LONG).show();
         }
     }
 
+    // Doesn't work because UI Thread don't download
     private String retrieve(String url) {
         HttpGet getRequest = new HttpGet(url);
         try {
@@ -258,5 +262,36 @@ public class MainActivity extends AppCompatActivity {
             }
             return null;
         }
+    }
+
+    private class TestDownloadFile extends AsyncTask<Void, Void, String> {
+
+        @Override
+        protected String doInBackground(Void... params) {
+            HttpGet getRequest = new HttpGet(url);
+            try {
+                HttpResponse getResponse = client.execute(getRequest);
+                final int statusCode = getResponse.getStatusLine().getStatusCode();
+
+                if (statusCode != HttpStatus.SC_OK) {
+                    return null;
+                }
+
+                HttpEntity getResponseEntity = getResponse.getEntity();
+                if (getResponseEntity != null) {
+                    return EntityUtils.toString(getResponseEntity);
+                }
+            } catch (IOException e) {
+                getRequest.abort();
+                Log.w(getClass().getSimpleName(), "Error for URL " + url, e);
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+        }
+
     }
 }
