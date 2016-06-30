@@ -30,4 +30,11 @@
         android:layout_below="@id/btn_download"
         android:text="@string/read" />
 
+    <Button
+        android:id="@+id/btn_read_new"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/btn_read"
+        android:text="@string/read_new" />
+
 </RelativeLayout>

@@ -45,6 +45,10 @@ public class MainActivity extends AppCompatActivity {
     private TextView tvWord;
     private Button btnDownload;
     private Button btnRead;
+    private Button btnReadSimple;
+
+    public static final String url = "http://dl.dropbox.com/u/7215751/JavaCodeGeeks/AndroidFullAppTutorialPart03/Transformers+2007.xml";
+    private DefaultHttpClient client = new DefaultHttpClient();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
         tvWord = (TextView) findViewById(R.id.tv_word);
         btnDownload = (Button) findViewById(R.id.btn_download);
         btnRead = (Button) findViewById(R.id.btn_read);
+        btnReadSimple = (Button) findViewById(R.id.btn_read_new);
 
         tvWord.setText(String.valueOf(""));
         btnDownload.setOnClickListener(new View.OnClickListener() {
@@ -72,14 +77,17 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        btnReadSimple.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                testSimpleFrameWork();
+                tvWord.setText("Read form Simple Framework XML");
+            }
+        });
+
     }
 
     public void testSimpleFrameWork() {
-        String url =
-                "http://dl.dropbox.com/u/7215751/JavaCodeGeeks/AndroidFullAppTutorialPart03/Transformers+2007.xml";
-
-        DefaultHttpClient client = new DefaultHttpClient();
-
         try {
             String xmlData = retrieve(url);
             Serializer serializer = new Persister();
@@ -90,7 +98,6 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             Toast.makeText(this, "Error Occured", Toast.LENGTH_LONG).show();
         }
-
     }
 
     private String retrieve(String url) {
