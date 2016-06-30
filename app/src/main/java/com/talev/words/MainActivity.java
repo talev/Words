@@ -36,14 +36,16 @@ public class MainActivity extends AppCompatActivity {
     public static final String TAG = "dimko";
     private TextView tvWord;
     private Button btnDownload;
+    private Button btnRead;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        tvWord = (TextView) findViewById(R.id.word);
+        tvWord = (TextView) findViewById(R.id.tv_word);
         btnDownload = (Button) findViewById(R.id.btn_download);
+        btnRead = (Button) findViewById(R.id.btn_read);
 
         tvWord.setText(String.valueOf(""));
         btnDownload.setOnClickListener(new View.OnClickListener() {
@@ -54,8 +56,17 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        btnRead.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                xmlPullParserFactory();
+                tvWord.setText("Read");
+            }
+        });
 
+    }
 
+    public void xmlPullParserFactory () {
         XmlPullParserFactory pullParserFactory;
         try {
             pullParserFactory = XmlPullParserFactory.newInstance();
@@ -87,8 +98,8 @@ public class MainActivity extends AppCompatActivity {
                         break;
 
                     case XmlPullParser.TEXT:
-                            Log.d(TAG, "getText: " + String.valueOf(parser.getText()));
-                            text = parser.getText();
+                        Log.d(TAG, "getText: " + String.valueOf(parser.getText()));
+                        text = parser.getText();
                         break;
 
                     case XmlPullParser.END_TAG:
@@ -131,6 +142,7 @@ public class MainActivity extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
     }
 
     public String readFile() {
