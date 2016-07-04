@@ -19,7 +19,7 @@ public class Kvtml {
     public List<Information> informations;
 
     @ElementList
-    public List<Identifier> indentifierses;
+    public List<Identifier> identifiers;
 
     @ElementList
     public List<Entry> entries;

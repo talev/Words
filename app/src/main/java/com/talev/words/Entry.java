@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * Created by Dimko Talev on 04.07.2016 г.
  */
-@Element(name = "id")
+@Element(name = "entry")
 public class Entry {
 
     @Attribute

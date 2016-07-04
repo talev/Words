@@ -6,7 +6,7 @@ import org.simpleframework.xml.Element;
 /**
  * Created by Dimko Talev on 04.07.2016 г.
  */
-@Element
+@Element(name = "translation")
 public class Translation {
 
     @Attribute
