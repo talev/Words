@@ -46,9 +46,12 @@ public class MainActivity extends AppCompatActivity {
     private Button btnDownload;
     private Button btnRead;
     private Button btnReadSimple;
+    private Button btnReadSimpleLast;
 
     public static final String url = "http://dl.dropbox.com/u/7215751/JavaCodeGeeks/AndroidFullAppTutorialPart03/Transformers+2007.xml";
     private DefaultHttpClient client = new DefaultHttpClient();
+
+    public static final String urlNew = "https://www.dropbox.com/s/g8fxc3svl79j808/MyNewWord.kvtml?dl=0";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
         btnDownload = (Button) findViewById(R.id.btn_download);
         btnRead = (Button) findViewById(R.id.btn_read);
         btnReadSimple = (Button) findViewById(R.id.btn_read_new);
+        btnReadSimpleLast = (Button) findViewById(R.id.btn_read_last);
 
         tvWord.setText(String.valueOf(""));
         btnDownload.setOnClickListener(new View.OnClickListener() {
@@ -85,6 +89,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        btnReadSimpleLast.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                myTestSimpleFrameWork();
+                tvWord.setText("Reading...");
+            }
+        });
+
     }
 
     public void testSimpleFrameWork() {
@@ -101,6 +113,23 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             Toast.makeText(this, "Error Occured", Toast.LENGTH_LONG).show();
         }
+    }
+
+    public void myTestSimpleFrameWork() {
+        try {
+            String xmlData = new MyTestDownloadFile().execute().get();
+            Serializer serializer = new Persister();
+
+            if (xmlData != null) {
+                Reader reader = new StringReader(xmlData);
+                Kvtml kvtml =
+                        serializer.read(Kvtml.class, reader, false);
+                Log.d(MainActivity.class.getSimpleName(), kvtml.toString());
+            }
+        } catch (Exception e) {
+            Toast.makeText(this, "Error Occured", Toast.LENGTH_LONG).show();
+        }
+
     }
 
     // Doesn't work because UI Thread don't download
@@ -294,4 +323,36 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
+
+    private class MyTestDownloadFile extends AsyncTask<Void, Void, String> {
+
+        @Override
+        protected String doInBackground(Void... params) {
+            HttpGet getRequest = new HttpGet(KEY_URL);
+            try {
+                HttpResponse getResponse = client.execute(getRequest);
+                final int statusCode = getResponse.getStatusLine().getStatusCode();
+
+                if (statusCode != HttpStatus.SC_OK) {
+                    return null;
+                }
+
+                HttpEntity getResponseEntity = getResponse.getEntity();
+                if (getResponseEntity != null) {
+                    return EntityUtils.toString(getResponseEntity);
+                }
+            } catch (IOException e) {
+                getRequest.abort();
+                Log.w(getClass().getSimpleName(), "Error for URL " + KEY_URL, e);
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+        }
+
+    }
+
 }
