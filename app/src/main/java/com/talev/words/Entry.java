@@ -10,7 +10,7 @@ import java.util.List;
  * Created by Dimko Talev on 04.07.2016 г.
  */
 @Element(name = "id")
-public class Entrie {
+public class Entry {
 
     @Attribute
     private int id;

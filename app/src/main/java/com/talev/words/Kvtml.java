@@ -22,5 +22,5 @@ public class Kvtml {
     public List<Identifier> indentifierses;
 
     @ElementList
-    public List<Entrie> entries;
+    public List<Entry> entries;
 }
