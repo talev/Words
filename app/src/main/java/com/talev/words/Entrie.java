@@ -9,11 +9,11 @@ import java.util.List;
 /**
  * Created by Dimko Talev on 04.07.2016 г.
  */
-@Element
+@Element(name = "id")
 public class Entrie {
 
     @Attribute
-    private  int id;
+    private int id;
 
     @ElementList(required = false)
     public List<Translation> translationsId;
