@@ -2,9 +2,7 @@ package com.talev.words;
 
 import org.simpleframework.xml.Attribute;
 import org.simpleframework.xml.Element;
-import org.simpleframework.xml.ElementArray;
 import org.simpleframework.xml.ElementList;
-import org.simpleframework.xml.ElementListUnion;
 
 import java.util.List;
 
@@ -17,6 +15,7 @@ public class Entry {
     @Attribute
     public int id;
 
-    /*@ElementListUnion(Attribute)
-    public List<Translation> translation;*/
+    @ElementList(inline = true)
+    public List<Translation> translations;
+
 }
