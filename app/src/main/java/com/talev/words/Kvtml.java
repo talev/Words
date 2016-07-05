@@ -1,7 +1,11 @@
 package com.talev.words;
 
 import org.simpleframework.xml.Attribute;
+import org.simpleframework.xml.Element;
+import org.simpleframework.xml.ElementArray;
 import org.simpleframework.xml.ElementList;
+import org.simpleframework.xml.ElementListUnion;
+import org.simpleframework.xml.ElementUnion;
 import org.simpleframework.xml.Root;
 
 import java.util.List;
@@ -16,7 +20,7 @@ public class Kvtml {
     public String version;
 
     @ElementList
-    public List<Information> informations;
+    public List<Information> information;
 
     @ElementList
     public List<Identifier> identifiers;

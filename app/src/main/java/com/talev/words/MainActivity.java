@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String url = "http://dl.dropbox.com/u/7215751/JavaCodeGeeks/AndroidFullAppTutorialPart03/Transformers+2007.xml";
     private DefaultHttpClient client = new DefaultHttpClient();
 
-    public static final String urlNew = "https://www.dropbox.com/s/g8fxc3svl79j808/MyNewWord.kvtml?dl=0";
+    public static final String urlTest = "http://80.72.69.142/Test.kvtml";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 myTestSimpleFrameWork();
-                tvWord.setText("Reading...");
+//                tvWord.setText("Reading...");
             }
         });
 
@@ -328,7 +328,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected String doInBackground(Void... params) {
-            HttpGet getRequest = new HttpGet(KEY_URL);
+            HttpGet getRequest = new HttpGet(urlTest);
             try {
                 HttpResponse getResponse = client.execute(getRequest);
                 final int statusCode = getResponse.getStatusLine().getStatusCode();
