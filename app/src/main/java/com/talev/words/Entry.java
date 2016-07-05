@@ -15,7 +15,7 @@ public class Entry {
     @Attribute
     private int id;
 
-    @ElementList(required = false)
-    public List<Translation> translationsId;
+    /*@ElementList
+    private List<Translation> translation;*/
 
 }
