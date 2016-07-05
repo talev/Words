@@ -19,8 +19,8 @@ public class Kvtml {
     @Attribute
     public String version;
 
-    @ElementList
-    public List<Information> information;
+    @Element
+    public Information information;
 
     @ElementList
     public List<Identifier> identifiers;
