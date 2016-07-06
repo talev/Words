@@ -1,8 +1,8 @@
 package com.talev.words;
 
 import android.os.AsyncTask;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -25,13 +25,17 @@ import java.io.StringReader;
 public class MainActivity extends AppCompatActivity {
 
     public static final String KEY_URL = "http://80.72.69.142/MyNewWord.kvtml";
+    public static final String KEY_URL_TEST = "http://80.72.69.142/Test2.kvtml";
     public static final String KEY_FILE_NAME = "MyNewWord.kvtml";
     public static final String TAG = "dimko";
     private TextView tvWord;
+    private Button btnWord1;
+    private Button btnWord2;
     private Button btnDownload;
 
-    public static final String urlTest = "http://80.72.69.142/Test.kvtml";
     private DefaultHttpClient client = new DefaultHttpClient();
+
+    private Kvtml kvtml;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,16 +44,43 @@ public class MainActivity extends AppCompatActivity {
 
         tvWord = (TextView) findViewById(R.id.tv_word);
         btnDownload = (Button) findViewById(R.id.btn_download);
+        btnWord1 = (Button) findViewById(R.id.btn_word1);
+        btnWord2 = (Button) findViewById(R.id.btn_word2);
 
         tvWord.setText(String.valueOf(""));
         btnDownload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 simpleFrameWork();
-//                tvWord.setText("File from server is download");
             }
         });
 
+        btnWord1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (kvtml != null) {
+                    tvWord.setTextColor(getResources().getColor(R.color.colorAccent));
+                    tvWord.setText(kvtml.entries.get(1).translations.get(0).text);
+                }
+            }
+        });
+
+        btnWord2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (kvtml != null) {
+                    tvWord.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
+                    tvWord.setText(kvtml.entries.get(1).translations.get(1).text);
+                }
+            }
+        });
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        simpleFrameWork();
     }
 
     public void simpleFrameWork() {
@@ -59,9 +90,9 @@ public class MainActivity extends AppCompatActivity {
 
             if (xmlData != null) {
                 Reader reader = new StringReader(xmlData);
-                Kvtml kvtml =
+                kvtml =
                         serializer.read(Kvtml.class, reader, false);
-                Log.d(MainActivity.class.getSimpleName(), kvtml.toString());
+//                Log.d(MainActivity.class.getSimpleName(), kvtml.toString());
             }
         } catch (Exception e) {
             Toast.makeText(this, "Error Occured", Toast.LENGTH_LONG).show();
@@ -73,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected String doInBackground(Void... params) {
-            HttpGet getRequest = new HttpGet(urlTest);
+            HttpGet getRequest = new HttpGet(KEY_URL_TEST);
             try {
                 HttpResponse getResponse = client.execute(getRequest);
                 final int statusCode = getResponse.getStatusLine().getStatusCode();
@@ -88,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             } catch (IOException e) {
                 getRequest.abort();
-                Log.w(getClass().getSimpleName(), "Error for URL " + KEY_URL, e);
+                Log.w(getClass().getSimpleName(), "Error for URL " + KEY_URL_TEST, e);
             }
             return null;
         }
