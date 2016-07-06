@@ -4,4 +4,6 @@
     <string name="read">Read</string>
     <string name="word1">Word EN</string>
     <string name="word2">Word Translation</string>
+    <string name="next">Next</string>
+    <string name="back">Back</string>
 </resources>

@@ -25,29 +25,37 @@ import java.io.StringReader;
 public class MainActivity extends AppCompatActivity {
 
     public static final String KEY_URL = "http://80.72.69.142/MyNewWord.kvtml";
-    public static final String KEY_URL_TEST = "http://80.72.69.142/Test2.kvtml";
     public static final String KEY_FILE_NAME = "MyNewWord.kvtml";
     public static final String TAG = "dimko";
+
     private TextView tvWord;
     private Button btnWord1;
     private Button btnWord2;
     private Button btnDownload;
+    private Button btnNext;
+    private Button btnBack;
 
     private DefaultHttpClient client = new DefaultHttpClient();
-
     private Kvtml kvtml;
+    private int count;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        count = 0;
+
         tvWord = (TextView) findViewById(R.id.tv_word);
         btnDownload = (Button) findViewById(R.id.btn_download);
         btnWord1 = (Button) findViewById(R.id.btn_word1);
         btnWord2 = (Button) findViewById(R.id.btn_word2);
+        btnNext = (Button) findViewById(R.id.btn_next);
+        btnBack = (Button) findViewById(R.id.btn_back);
 
         tvWord.setText(String.valueOf(""));
+        btnNext.setText(getString(R.string.next) + " " + String.valueOf(count));
+
         btnDownload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -60,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (kvtml != null) {
                     tvWord.setTextColor(getResources().getColor(R.color.colorAccent));
-                    tvWord.setText(kvtml.entries.get(1).translations.get(0).text);
+                    tvWord.setText(kvtml.entries.get(count).translations.get(0).text);
                 }
             }
         });
@@ -70,8 +78,24 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (kvtml != null) {
                     tvWord.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
-                    tvWord.setText(kvtml.entries.get(1).translations.get(1).text);
+                    tvWord.setText(kvtml.entries.get(count).translations.get(1).text);
                 }
+            }
+        });
+
+        btnNext.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                count++;
+                btnNext.setText(getString(R.string.next) + " " + String.valueOf(count));
+            }
+        });
+
+        btnBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                count--;
+                btnNext.setText(getString(R.string.next) + " " + String.valueOf(count));
             }
         });
 
@@ -85,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void simpleFrameWork() {
         try {
-            String xmlData = new DownloadFile().execute().get();
+            String xmlData = new String(new DownloadFile().execute().get().getBytes("ISO-8859-1"), "UTF-8");
             Serializer serializer = new Persister();
 
             if (xmlData != null) {
@@ -104,7 +128,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected String doInBackground(Void... params) {
-            HttpGet getRequest = new HttpGet(KEY_URL_TEST);
+            HttpGet getRequest = new HttpGet(KEY_URL);
             try {
                 HttpResponse getResponse = client.execute(getRequest);
                 final int statusCode = getResponse.getStatusLine().getStatusCode();
@@ -119,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             } catch (IOException e) {
                 getRequest.abort();
-                Log.w(getClass().getSimpleName(), "Error for URL " + KEY_URL_TEST, e);
+                Log.w(getClass().getSimpleName(), "Error for URL " + KEY_URL, e);
             }
             return null;
         }
