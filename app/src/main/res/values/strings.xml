@@ -2,6 +2,4 @@
     <string name="app_name">Words</string>
     <string name="download">Download</string>
     <string name="read">Read</string>
-    <string name="read_new">Read Simple Framework XML</string>
-    <string name="read_last">Read SFXML Last</string>
 </resources>

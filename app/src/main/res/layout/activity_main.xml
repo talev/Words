@@ -23,18 +23,4 @@
         android:layout_below="@id/tv_word"
         android:text="@string/download" />
 
-    <Button
-        android:id="@+id/btn_read_new"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/btn_download"
-        android:text="@string/read_new" />
-
-    <Button
-        android:id="@+id/btn_read_last"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/btn_read_new"
-        android:text="@string/read_last" />
-
 </RelativeLayout>
