@@ -1,6 +1,10 @@
 package com.talev.words;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -27,6 +31,8 @@ public class MainActivity extends AppCompatActivity {
     public static final String KEY_URL = "http://80.72.69.142/MyNewWord.kvtml";
     public static final String KEY_FILE_NAME = "MyNewWord.kvtml";
     public static final String TAG = "dimko";
+    public static final String WORDS = "words";
+    public static final String COUNT = "count";
 
     private TextView tvWord;
     private Button btnWord1;
@@ -37,7 +43,9 @@ public class MainActivity extends AppCompatActivity {
 
     private DefaultHttpClient client = new DefaultHttpClient();
     private Kvtml kvtml;
+    private String xmlData;
     private int count;
+    private SharedPreferences sharedpreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,7 +75,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (kvtml != null) {
-                    tvWord.setTextColor(getResources().getColor(R.color.colorAccent));
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        tvWord.setTextColor(getResources().getColor(R.color.colorAccent, getTheme()));
+                    } else {
+                        tvWord.setTextColor(getResources().getColor(R.color.colorAccent));
+                    }
                     tvWord.setText(kvtml.entries.get(count).translations.get(0).text);
                 }
             }
@@ -77,7 +89,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (kvtml != null) {
-                    tvWord.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        tvWord.setTextColor(getResources().getColor(R.color.colorPrimaryDark, getTheme()));
+                    } else {
+                        tvWord.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
+                    }
                     tvWord.setText(kvtml.entries.get(count).translations.get(1).text);
                 }
             }
@@ -86,16 +102,22 @@ public class MainActivity extends AppCompatActivity {
         btnNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                count++;
-                btnNext.setText(getString(R.string.next) + " " + String.valueOf(count));
+                if (kvtml != null) {
+                    if (count <= kvtml.entries.size()) {
+                        count++;
+                        btnNext.setText(getString(R.string.next) + " " + String.valueOf(count));
+                    }
+                }
             }
         });
 
         btnBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                count--;
-                btnNext.setText(getString(R.string.next) + " " + String.valueOf(count));
+                if (count > 0) {
+                    count--;
+                    btnNext.setText(getString(R.string.next) + " " + String.valueOf(count));
+                }
             }
         });
 
@@ -104,18 +126,33 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        simpleFrameWork();
+
+        sharedpreferences = getSharedPreferences("ListWords", Context.MODE_PRIVATE);
+        xmlData = sharedpreferences.getString(WORDS, null);
+        count = sharedpreferences.getInt(COUNT, 0);
+
+        btnNext.setText(getString(R.string.next) + " " + String.valueOf(count));
+
+        Serializer serializer = new Persister();
+
+        if (xmlData != null) {
+            Reader reader = new StringReader(xmlData);
+            try {
+                kvtml = serializer.read(Kvtml.class, reader, false);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public void simpleFrameWork() {
         try {
-            String xmlData = new String(new DownloadFile().execute().get().getBytes("ISO-8859-1"), "UTF-8");
+            xmlData = new String(new DownloadFile().execute(KEY_URL).get().getBytes("ISO-8859-1"), "UTF-8");
             Serializer serializer = new Persister();
 
             if (xmlData != null) {
                 Reader reader = new StringReader(xmlData);
-                kvtml =
-                        serializer.read(Kvtml.class, reader, false);
+                kvtml = serializer.read(Kvtml.class, reader, false);
 //                Log.d(MainActivity.class.getSimpleName(), kvtml.toString());
             }
         } catch (Exception e) {
@@ -124,28 +161,40 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private class DownloadFile extends AsyncTask<Void, Void, String> {
+    @Override
+    protected void onPause() {
+        super.onPause();
+        SharedPreferences.Editor editor = sharedpreferences.edit();
+        editor.putString(WORDS, xmlData);
+        editor.putInt(COUNT, count);
+        editor.commit();
+    }
+
+    private class DownloadFile extends AsyncTask<String, Void, String> {
 
         @Override
-        protected String doInBackground(Void... params) {
-            HttpGet getRequest = new HttpGet(KEY_URL);
-            try {
-                HttpResponse getResponse = client.execute(getRequest);
-                final int statusCode = getResponse.getStatusLine().getStatusCode();
+        protected String doInBackground(String... params) {
+            for (String url: params) {
+                HttpGet getRequest = new HttpGet(url);
+                try {
+                    HttpResponse getResponse = client.execute(getRequest);
+                    final int statusCode = getResponse.getStatusLine().getStatusCode();
 
-                if (statusCode != HttpStatus.SC_OK) {
-                    return null;
-                }
+                    if (statusCode != HttpStatus.SC_OK) {
+                        return null;
+                    }
 
-                HttpEntity getResponseEntity = getResponse.getEntity();
-                if (getResponseEntity != null) {
-                    return EntityUtils.toString(getResponseEntity);
+                    HttpEntity getResponseEntity = getResponse.getEntity();
+                    if (getResponseEntity != null) {
+                        return EntityUtils.toString(getResponseEntity);
+                    }
+                } catch (IOException e) {
+                    getRequest.abort();
+                    Log.w(getClass().getSimpleName(), "Error for URL " + url, e);
                 }
-            } catch (IOException e) {
-                getRequest.abort();
-                Log.w(getClass().getSimpleName(), "Error for URL " + KEY_URL, e);
             }
-            return null;
+
+            return  null;
         }
 
         @Override

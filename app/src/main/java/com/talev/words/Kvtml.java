@@ -27,4 +27,8 @@ public class Kvtml {
 
     @ElementList
     public List<Entry> entries;
+
+    @ElementList
+    public List<Lessons> lessons;
+
 }
