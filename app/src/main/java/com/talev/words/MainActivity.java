@@ -22,9 +22,19 @@ import org.apache.http.util.EntityUtils;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Reader;
+import java.io.StreamCorruptedException;
 import java.io.StringReader;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -35,39 +45,58 @@ public class MainActivity extends AppCompatActivity {
     public static final String COUNT = "count";
 
     private TextView tvWord;
+    private Button btnKnow;
     private Button btnWord1;
     private Button btnWord2;
-    private Button btnDownload;
     private Button btnNext;
     private Button btnBack;
+    private Button btnDownload;
 
     private DefaultHttpClient client = new DefaultHttpClient();
     private Kvtml kvtml;
     private String xmlData;
-    private int count;
+    private int count = 0;
     private SharedPreferences sharedpreferences;
+
+    private HashMap<String, String> dontKnow = new HashMap();
+    private Set set;
+    private Iterator iterator;
+
+    private String word;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        count = 0;
-
         tvWord = (TextView) findViewById(R.id.tv_word);
-        btnDownload = (Button) findViewById(R.id.btn_download);
+        btnKnow = (Button) findViewById(R.id.btn_know);
         btnWord1 = (Button) findViewById(R.id.btn_word1);
         btnWord2 = (Button) findViewById(R.id.btn_word2);
         btnNext = (Button) findViewById(R.id.btn_next);
         btnBack = (Button) findViewById(R.id.btn_back);
+        btnDownload = (Button) findViewById(R.id.btn_download);
 
         tvWord.setText(String.valueOf(""));
         btnNext.setText(getString(R.string.next) + " " + String.valueOf(count));
 
-        btnDownload.setOnClickListener(new View.OnClickListener() {
+        btnKnow.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                simpleFrameWork();
+//                dontKnow.put(kvtml.entries.get(count).translations.get(0).text, kvtml.entries.get(count).translations.get(1).text);
+//                loadFileWords();
+//                dontKnow.remove();
+//                set = dontKnow.entrySet();
+
+/*
+                while (iterator.hasNext()) {
+                    Map.Entry mapEntry = (Map.Entry) iterator.next();
+                    mapEntry.getKey();
+                    mapEntry.getValue();
+                }
+*/
+
+                Log.d(TAG, dontKnow.toString());
             }
         });
 
@@ -121,11 +150,22 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        btnDownload.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                simpleFrameWork();
+            }
+        });
+
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+
+        loadFileWords();
+        set = dontKnow.entrySet();
+        iterator = set.iterator();
 
         sharedpreferences = getSharedPreferences("ListWords", Context.MODE_PRIVATE);
         xmlData = sharedpreferences.getString(WORDS, null);
@@ -153,12 +193,44 @@ public class MainActivity extends AppCompatActivity {
             if (xmlData != null) {
                 Reader reader = new StringReader(xmlData);
                 kvtml = serializer.read(Kvtml.class, reader, false);
-//                Log.d(MainActivity.class.getSimpleName(), kvtml.toString());
+
+                dontKnow.clear();
+                for (int i = 0; i < kvtml.entries.size(); i++) {
+                    dontKnow.put(kvtml.entries.get(i).translations.get(0).text, kvtml.entries.get(i).translations.get(1).text);
+                }
+                saveFileWords();
             }
         } catch (Exception e) {
             Toast.makeText(this, "Error Occured", Toast.LENGTH_LONG).show();
         }
 
+    }
+
+    public void saveFileWords() {
+        try {
+            FileOutputStream outputStream = openFileOutput("filewords", Context.MODE_PRIVATE);
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
+            objectOutputStream.writeObject(dontKnow);
+            objectOutputStream.close();
+            outputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void loadFileWords() {
+        try {
+            FileInputStream fileInputStream = openFileInput("filewords");
+            ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+            dontKnow = (HashMap<String, String>) objectInputStream.readObject();
+            objectInputStream.close();
+            fileInputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
