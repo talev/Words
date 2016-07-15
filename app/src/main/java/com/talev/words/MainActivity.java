@@ -1,8 +1,6 @@
 package com.talev.words;
 
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -23,26 +21,22 @@ import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Reader;
-import java.io.StreamCorruptedException;
 import java.io.StringReader;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     public static final String KEY_URL = "http://80.72.69.142/MyNewWord.kvtml";
-    public static final String KEY_FILE_NAME = "MyNewWord.kvtml";
+    public static final String KEY_FILE_NAME = "filewords";
     public static final String TAG = "dimko";
     public static final String WORDS = "words";
     public static final String COUNT = "count";
+    public static final String SPACE = " ";
 
     private TextView tvWord;
     private Button btnKnow;
@@ -56,13 +50,14 @@ public class MainActivity extends AppCompatActivity {
     private Kvtml kvtml;
     private String xmlData;
     private int count = 0;
-    private SharedPreferences sharedpreferences;
+//    private SharedPreferences sharedpreferences;
 
-    private HashMap<String, String> dontKnow = new HashMap();
+    private List<Word> words;
+
+    /*private Map<String, String> dontKnow = new HashMap();
     private Set set;
     private Iterator iterator;
-
-    private String word;
+    private Map.Entry mapEntry;*/
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,33 +78,39 @@ public class MainActivity extends AppCompatActivity {
         btnKnow.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                dontKnow.put(kvtml.entries.get(count).translations.get(0).text, kvtml.entries.get(count).translations.get(1).text);
-//                loadFileWords();
-//                dontKnow.remove();
-//                set = dontKnow.entrySet();
 
-/*
-                while (iterator.hasNext()) {
-                    Map.Entry mapEntry = (Map.Entry) iterator.next();
-                    mapEntry.getKey();
-                    mapEntry.getValue();
+                words.remove(count);
+                // From HashMap
+                /*if (mapEntry != null) {
+                    dontKnow.remove(mapEntry.getKey());
+                    refresh();
+                    mapEntry = (Map.Entry) iterator.next();
+                    showFirstWord();
                 }
-*/
-
-                Log.d(TAG, dontKnow.toString());
+                Log.d(TAG, dontKnow.toString());*/
             }
         });
 
         btnWord1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (kvtml != null) {
+//                showFirstWord();
+
+                /*if (kvtml != null) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                         tvWord.setTextColor(getResources().getColor(R.color.colorAccent, getTheme()));
                     } else {
                         tvWord.setTextColor(getResources().getColor(R.color.colorAccent));
                     }
                     tvWord.setText(kvtml.entries.get(count).translations.get(0).text);
+                }*/
+                if (words != null) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        tvWord.setTextColor(getResources().getColor(R.color.colorAccent, getTheme()));
+                    } else {
+                        tvWord.setTextColor(getResources().getColor(R.color.colorAccent));
+                    }
+                    tvWord.setText(words.get(count).getWord1());
                 }
             }
         });
@@ -117,13 +118,32 @@ public class MainActivity extends AppCompatActivity {
         btnWord2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (kvtml != null) {
+                // From HashMap
+                /*if (mapEntry != null && mapEntry.getValue() != null) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        tvWord.setTextColor(getResources().getColor(R.color.colorPrimaryDark, getTheme()));
+                    } else {
+                        tvWord.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
+                    }
+                    tvWord.setText(mapEntry.getValue().toString());
+                    Log.d(TAG, dontKnow.toString());
+                }*/
+
+                /*if (kvtml != null) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                         tvWord.setTextColor(getResources().getColor(R.color.colorPrimaryDark, getTheme()));
                     } else {
                         tvWord.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
                     }
                     tvWord.setText(kvtml.entries.get(count).translations.get(1).text);
+                }*/
+                if (words != null) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        tvWord.setTextColor(getResources().getColor(R.color.colorPrimaryDark, getTheme()));
+                    } else {
+                        tvWord.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
+                    }
+                    tvWord.setText(words.get(count).getWord2());
                 }
             }
         });
@@ -131,10 +151,25 @@ public class MainActivity extends AppCompatActivity {
         btnNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (kvtml != null) {
+                // From HashMap
+                /*if (mapEntry != null) {
+                    mapEntry = (Map.Entry) iterator.next();
+                    showFirstWord();
+                    Log.d(TAG, dontKnow.toString());
+                } else {
+                    refresh();
+                }*/
+
+                /*if (kvtml != null) {
                     if (count <= kvtml.entries.size()) {
                         count++;
                         btnNext.setText(getString(R.string.next) + " " + String.valueOf(count));
+                    }
+                }*/
+                if (words != null) {
+                    if (count <= words.size()) {
+                        count++;
+                        btnNext.setText(getString(R.string.next) + SPACE + String.valueOf(count));
                     }
                 }
             }
@@ -143,9 +178,13 @@ public class MainActivity extends AppCompatActivity {
         btnBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (count > 0) {
+                /*if (count > 0) {
                     count--;
                     btnNext.setText(getString(R.string.next) + " " + String.valueOf(count));
+                }*/
+                if (count > 0) {
+                    count--;
+                    btnNext.setText(getString(R.string.next) + SPACE + String.valueOf(count));
                 }
             }
         });
@@ -159,30 +198,45 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private void showFirstWord() {
+        // From HashMap
+        /*if (mapEntry != null && mapEntry.getKey() != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                tvWord.setTextColor(getResources().getColor(R.color.colorAccent, getTheme()));
+            } else {
+                tvWord.setTextColor(getResources().getColor(R.color.colorAccent));
+            }
+            tvWord.setText(mapEntry.getKey().toString());
+            Log.d(TAG, dontKnow.toString());
+        }*/
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
 
-        loadFileWords();
-        set = dontKnow.entrySet();
-        iterator = set.iterator();
+//        loadFileWords();
+//        refresh();
 
-        sharedpreferences = getSharedPreferences("ListWords", Context.MODE_PRIVATE);
-        xmlData = sharedpreferences.getString(WORDS, null);
-        count = sharedpreferences.getInt(COUNT, 0);
+//        set = dontKnow.entrySet();
+//        iterator = set.iterator();
 
-        btnNext.setText(getString(R.string.next) + " " + String.valueOf(count));
+//        sharedpreferences = getSharedPreferences("ListWords", Context.MODE_PRIVATE);
+//        xmlData = sharedpreferences.getString(WORDS, null);
+//        count = sharedpreferences.getInt(COUNT, 0);
 
-        Serializer serializer = new Persister();
+//        btnNext.setText(getString(R.string.next) + " " + String.valueOf(count));
 
-        if (xmlData != null) {
-            Reader reader = new StringReader(xmlData);
-            try {
-                kvtml = serializer.read(Kvtml.class, reader, false);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+//        Serializer serializer = new Persister();
+
+//        if (xmlData != null) {
+//            Reader reader = new StringReader(xmlData);
+//            try {
+//                kvtml = serializer.read(Kvtml.class, reader, false);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        }
     }
 
     public void simpleFrameWork() {
@@ -194,11 +248,18 @@ public class MainActivity extends AppCompatActivity {
                 Reader reader = new StringReader(xmlData);
                 kvtml = serializer.read(Kvtml.class, reader, false);
 
-                dontKnow.clear();
+                // From HashMap
+                /*dontKnow.clear();
                 for (int i = 0; i < kvtml.entries.size(); i++) {
                     dontKnow.put(kvtml.entries.get(i).translations.get(0).text, kvtml.entries.get(i).translations.get(1).text);
                 }
                 saveFileWords();
+//                btnNext.setText(getString(R.string.next) + " " + String.valueOf(dontKnow.size()));
+                setTitle(getString(R.string.app_name) + " " + String.valueOf(dontKnow.size()));
+                refresh();*/
+                /*for (int i = 0; i < kvtml.entries.size(); i++) {
+                    words.add(new Word(kvtml.entries.get(i).translations.get(0).text, kvtml.entries.get(i).translations.get(1).text));
+                }*/
             }
         } catch (Exception e) {
             Toast.makeText(this, "Error Occured", Toast.LENGTH_LONG).show();
@@ -208,9 +269,10 @@ public class MainActivity extends AppCompatActivity {
 
     public void saveFileWords() {
         try {
-            FileOutputStream outputStream = openFileOutput("filewords", Context.MODE_PRIVATE);
+            FileOutputStream outputStream = openFileOutput(KEY_FILE_NAME, Context.MODE_PRIVATE);
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
-            objectOutputStream.writeObject(dontKnow);
+//            objectOutputStream.writeObject(dontKnow);
+            objectOutputStream.writeObject(words);
             objectOutputStream.close();
             outputStream.close();
         } catch (IOException e) {
@@ -221,9 +283,10 @@ public class MainActivity extends AppCompatActivity {
 
     public void loadFileWords() {
         try {
-            FileInputStream fileInputStream = openFileInput("filewords");
+            FileInputStream fileInputStream = openFileInput(KEY_FILE_NAME);
             ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
-            dontKnow = (HashMap<String, String>) objectInputStream.readObject();
+//            dontKnow = (HashMap<String, String>) objectInputStream.readObject();
+            words = (List<Word>) objectInputStream.readObject();
             objectInputStream.close();
             fileInputStream.close();
         } catch (IOException e) {
@@ -233,20 +296,30 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void refresh() {
+        /*set = dontKnow.entrySet();
+        iterator = set.iterator();
+        mapEntry = (Map.Entry) iterator.next();*/
+//        btnNext.setText(getString(R.string.next) + " " + String.valueOf(dontKnow.size()));
+//        setTitle(getString(R.string.app_name) + " " + String.valueOf(dontKnow.size()));
+
+    }
+
     @Override
     protected void onPause() {
         super.onPause();
-        SharedPreferences.Editor editor = sharedpreferences.edit();
+        saveFileWords();
+        /*SharedPreferences.Editor editor = sharedpreferences.edit();
         editor.putString(WORDS, xmlData);
         editor.putInt(COUNT, count);
-        editor.commit();
+        editor.commit();*/
     }
 
     private class DownloadFile extends AsyncTask<String, Void, String> {
 
         @Override
         protected String doInBackground(String... params) {
-            for (String url: params) {
+            for (String url : params) {
                 HttpGet getRequest = new HttpGet(url);
                 try {
                     HttpResponse getResponse = client.execute(getRequest);
@@ -266,7 +339,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
-            return  null;
+            return null;
         }
 
         @Override
