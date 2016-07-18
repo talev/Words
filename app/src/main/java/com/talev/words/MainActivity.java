@@ -31,7 +31,7 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     public static final String KEY_URL = "http://80.72.69.142/MyNewWord.kvtml";
     public static final String KEY_FILE_NAME = "filewords";
@@ -42,18 +42,18 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView tvWord;
     private Button btnKnow;
-    private Button btnWord1;
-    private Button btnWord2;
+    private Button btnCheckIt;
     private Button btnNext;
     private Button btnBack;
     private Button btnDownload;
 
     private DefaultHttpClient client = new DefaultHttpClient();
+    private SharedPreferences sharedpreferences;
     private Kvtml kvtml;
     private String xmlData;
     private int count = 0;
     private int totalWords = 0;
-    private SharedPreferences sharedpreferences;
+    private boolean translate = false;
 
     private List<Word> words = new ArrayList<>();
 
@@ -64,62 +64,16 @@ public class MainActivity extends AppCompatActivity {
 
         tvWord = (TextView) findViewById(R.id.tv_word);
         btnKnow = (Button) findViewById(R.id.btn_know);
-        btnWord1 = (Button) findViewById(R.id.btn_word1);
-        btnWord2 = (Button) findViewById(R.id.btn_word2);
+        btnCheckIt = (Button) findViewById(R.id.btn_check_it);
         btnNext = (Button) findViewById(R.id.btn_next);
         btnBack = (Button) findViewById(R.id.btn_back);
         btnDownload = (Button) findViewById(R.id.btn_download);
 
-        btnKnow.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                words.remove(count);
-                refresh();
-            }
-        });
-
-        btnWord1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showFirstWord();
-            }
-        });
-
-        btnWord2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showSecondWord();
-            }
-        });
-
-        btnNext.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (words != null) {
-                    if (count < words.size()) {
-                        count++;
-                        refresh();
-                    }
-                }
-            }
-        });
-
-        btnBack.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (count > 0) {
-                    count--;
-                    refresh();
-                }
-            }
-        });
-
-        btnDownload.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                simpleFrameWork();
-            }
-        });
+        btnKnow.setOnClickListener(this);
+        btnCheckIt.setOnClickListener(this);
+        btnBack.setOnClickListener(this);
+        btnNext.setOnClickListener(this);
+        btnDownload.setOnClickListener(this);
 
     }
 
@@ -131,6 +85,7 @@ public class MainActivity extends AppCompatActivity {
                 tvWord.setTextColor(getResources().getColor(R.color.colorAccent));
             }
             tvWord.setText(words.get(count).getWord1());
+            translate = false;
         }
     }
 
@@ -142,6 +97,7 @@ public class MainActivity extends AppCompatActivity {
                 tvWord.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
             }
             tvWord.setText(words.get(count).getWord2());
+            translate = true;
         }
     }
 
@@ -227,6 +183,38 @@ public class MainActivity extends AppCompatActivity {
         editor.putInt(WORDS, totalWords);
         editor.putInt(COUNT, count);
         editor.commit();
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (v.getId() == R.id.btn_know) {
+            words.remove(count);
+            refresh();
+        }
+        if (v.getId() == R.id.btn_check_it) {
+            if (translate) {
+                showFirstWord();
+            } else  {
+                showSecondWord();
+            }
+        }
+        if (v.getId() == R.id.btn_back) {
+            if (count > 0) {
+                count--;
+                refresh();
+            }
+        }
+        if (v.getId() == R.id.btn_next) {
+            if (words != null) {
+                if (count < words.size()) {
+                    count++;
+                    refresh();
+                }
+            }
+        }
+        if (v.getId() == R.id.btn_download) {
+            simpleFrameWork();
+        }
     }
 
     private class DownloadFile extends AsyncTask<String, Void, String> {

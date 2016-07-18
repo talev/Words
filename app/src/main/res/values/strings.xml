@@ -2,8 +2,7 @@
     <string name="app_name">Words</string>
     <string name="download">Download</string>
     <string name="read">Read</string>
-    <string name="word1">Word</string>
-    <string name="word2">Check it</string>
+    <string name="check_it">Check it</string>
     <string name="next">Next</string>
     <string name="back">Back</string>
     <string name="know">I know</string>
