@@ -189,7 +189,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         if (v.getId() == R.id.btn_know) {
             words.remove(count);
-            refresh();
+            if (count + 1 < words.size()) {
+                refresh();
+            } else {
+                count = words.size() - 1;
+                refresh();
+            }
         }
         if (v.getId() == R.id.btn_check_it) {
             if (isTranslated) {
