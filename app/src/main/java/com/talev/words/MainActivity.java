@@ -196,7 +196,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (v.getId() == R.id.btn_check_it) {
             if (itTranslated) {
                 showFirstWord();
-            } else  {
+            } else {
                 showSecondWord();
             }
         }
