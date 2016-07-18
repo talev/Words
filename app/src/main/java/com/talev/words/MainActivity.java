@@ -204,12 +204,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (count > 0) {
                 count--;
                 refresh();
+            } else {
+                count = words.size() - 1;
+                refresh();
             }
         }
         if (v.getId() == R.id.btn_next) {
             if (words != null) {
-                if (count < words.size()) {
+                if (count + 1 < words.size()) {
                     count++;
+                    refresh();
+                } else {
+                    count = 0;
                     refresh();
                 }
             }
