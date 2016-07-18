@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private String xmlData;
     private int count = 0;
     private int totalWords = 0;
-    private boolean showTranslated = false;
+    private boolean itTranslated = false;
 
     private List<Word> words = new ArrayList<>();
 
@@ -85,7 +85,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 tvWord.setTextColor(getResources().getColor(R.color.colorAccent));
             }
             tvWord.setText(words.get(count).getWord1());
-            showTranslated = false;
+            itTranslated = false;
         }
     }
 
@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 tvWord.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
             }
             tvWord.setText(words.get(count).getWord2());
-            showTranslated = true;
+            itTranslated = true;
         }
     }
 
@@ -192,7 +192,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             refresh();
         }
         if (v.getId() == R.id.btn_check_it) {
-            if (showTranslated) {
+            if (itTranslated) {
                 showFirstWord();
             } else  {
                 showSecondWord();
