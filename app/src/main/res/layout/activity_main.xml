@@ -34,7 +34,6 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:text="@string/check_it"
-        android:layout_toEndOf="@+id/tv_word"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
 
