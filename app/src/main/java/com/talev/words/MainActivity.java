@@ -52,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
     private Kvtml kvtml;
     private String xmlData;
     private int count = 0;
+    private int totalWords = 0;
     private SharedPreferences sharedpreferences;
 
     private List<Word> words = new ArrayList<>();
@@ -73,6 +74,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 words.remove(count);
+                refresh();
             }
         });
 
@@ -148,6 +150,7 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         sharedpreferences = getSharedPreferences("ListWords", Context.MODE_PRIVATE);
 //        xmlData = sharedpreferences.getString(WORDS, null);
+        totalWords = sharedpreferences.getInt(WORDS, 0);
         count = sharedpreferences.getInt(COUNT, 0);
 
         loadFileWords();
@@ -164,10 +167,13 @@ public class MainActivity extends AppCompatActivity {
                 kvtml = serializer.read(Kvtml.class, reader, false);
 
                 if (kvtml != null) {
+                    words.clear();
                     for (int i = 0; i < kvtml.entries.size(); i++) {
                         words.add(new Word(kvtml.entries.get(i).translations.get(0).text, kvtml.entries.get(i).translations.get(1).text));
                     }
+                    totalWords = kvtml.entries.size();
                 }
+                count = 0;
                 refresh();
             }
         } catch (Exception e) {
@@ -204,8 +210,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void refresh() {
-        if (count >= 0) {
-            setTitle(getString(R.string.app_name) + SPACE + String.valueOf(count + 1));
+        if (words.size() > 0) {
+            setTitle(getString(R.string.app_name) + SPACE + String.valueOf(count + 1) + "/" + words.size() + SPACE + "(" + totalWords + ")");
         } else {
             setTitle(getString(R.string.app_name));
         }
@@ -218,6 +224,7 @@ public class MainActivity extends AppCompatActivity {
         saveFileWords();
         SharedPreferences.Editor editor = sharedpreferences.edit();
 //        editor.putString(WORDS, xmlData);
+        editor.putInt(WORDS, totalWords);
         editor.putInt(COUNT, count);
         editor.commit();
     }
