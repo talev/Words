@@ -51,11 +51,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private DefaultHttpClient client = new DefaultHttpClient();
     private SharedPreferences sharedpreferences;
-    private Kvtml kvtml;
-    private String xmlData;
     private int count = 0;
     private int totalWords = 0;
-    private boolean itTranslated = false;
+    private boolean isTranslated = false;
 
     private List<Word> words = new ArrayList<>();
 
@@ -87,7 +85,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 tvWord.setTextColor(getResources().getColor(R.color.colorAccent));
             }
             tvWord.setText(words.get(count).getWord1());
-            itTranslated = false;
+            isTranslated = false;
         }
     }
 
@@ -99,7 +97,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 tvWord.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
             }
             tvWord.setText(words.get(count).getWord2());
-            itTranslated = true;
+            isTranslated = true;
         }
     }
 
@@ -117,12 +115,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public void simpleFrameWork() {
         try {
-            xmlData = new String(new DownloadFile().execute(KEY_URL).get().getBytes("ISO-8859-1"), "UTF-8");
+            String xmlData = new String(new DownloadFile().execute(KEY_URL).get().getBytes("ISO-8859-1"), "UTF-8");
             Serializer serializer = new Persister();
 
             if (xmlData != null) {
                 Reader reader = new StringReader(xmlData);
-                kvtml = serializer.read(Kvtml.class, reader, false);
+                Kvtml kvtml = serializer.read(Kvtml.class, reader, false);
 
                 if (kvtml != null) {
                     words.clear();
@@ -194,7 +192,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             refresh();
         }
         if (v.getId() == R.id.btn_check_it) {
-            if (itTranslated) {
+            if (isTranslated) {
                 showFirstWord();
             } else {
                 showSecondWord();
