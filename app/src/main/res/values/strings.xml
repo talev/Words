@@ -2,8 +2,12 @@
     <string name="app_name">Words</string>
     <string name="download">Download</string>
     <string name="read">Read</string>
-    <string name="check_it">Check it</string>
+    <string name="check">Check</string>
     <string name="next">Next</string>
     <string name="back">Back</string>
-    <string name="know">I know</string>
+    <string name="know">I know it</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="download_message">Are you sure, You wanted to download your new words!</string>
+    <string name="error_message">Error Occurred</string>
 </resources>

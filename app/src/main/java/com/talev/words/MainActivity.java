@@ -36,15 +36,15 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     public static final String KEY_URL = "http://80.72.69.142/MyNewWord.kvtml";
-    public static final String KEY_FILE_NAME = "filewords";
-    public static final String TAG = "dimko";
-    public static final String WORDS = "words";
-    public static final String COUNT = "count";
+    public static final String KEY_FILE_NAME = "UnknownWords";
+    public static final String TOTAL_WORDS = "TotalWords";
+    public static final String COUNT = "Count";
     public static final String SPACE = " ";
+    public static final String CURRENT_STATE = "CurrentState";
 
     private TextView tvWord;
     private Button btnKnow;
-    private Button btnCheckIt;
+    private Button btnCheck;
     private Button btnNext;
     private Button btnBack;
     private Button btnDownload;
@@ -64,17 +64,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         tvWord = (TextView) findViewById(R.id.tv_word);
         btnKnow = (Button) findViewById(R.id.btn_know);
-        btnCheckIt = (Button) findViewById(R.id.btn_check_it);
+        btnCheck = (Button) findViewById(R.id.btn_check);
         btnNext = (Button) findViewById(R.id.btn_next);
         btnBack = (Button) findViewById(R.id.btn_back);
         btnDownload = (Button) findViewById(R.id.btn_download);
 
         btnKnow.setOnClickListener(this);
-        btnCheckIt.setOnClickListener(this);
+        btnCheck.setOnClickListener(this);
         btnBack.setOnClickListener(this);
         btnNext.setOnClickListener(this);
         btnDownload.setOnClickListener(this);
-
     }
 
     private void showFirstWord() {
@@ -104,9 +103,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onResume() {
         super.onResume();
-        sharedpreferences = getSharedPreferences("ListWords", Context.MODE_PRIVATE);
-//        xmlData = sharedpreferences.getString(WORDS, null);
-        totalWords = sharedpreferences.getInt(WORDS, 0);
+        sharedpreferences = getSharedPreferences(CURRENT_STATE, Context.MODE_PRIVATE);
+//        xmlData = sharedpreferences.getString(TOTAL_WORDS, null);
+        totalWords = sharedpreferences.getInt(TOTAL_WORDS, 0);
         count = sharedpreferences.getInt(COUNT, 0);
 
         loadFileWords();
@@ -135,9 +134,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 refresh();
             }
         } catch (Exception e) {
-            Toast.makeText(this, "Error Occured", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.error_message), Toast.LENGTH_LONG).show();
         }
-
     }
 
     public void saveFileWords() {
@@ -150,7 +148,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
     public void loadFileWords() {
@@ -181,8 +178,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onPause();
         saveFileWords();
         SharedPreferences.Editor editor = sharedpreferences.edit();
-//        editor.putString(WORDS, xmlData);
-        editor.putInt(WORDS, totalWords);
+//        editor.putString(TOTAL_WORDS, xmlData);
+        editor.putInt(TOTAL_WORDS, totalWords);
         editor.putInt(COUNT, count);
         editor.commit();
     }
@@ -198,7 +195,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 refresh();
             }
         }
-        if (v.getId() == R.id.btn_check_it) {
+        if (v.getId() == R.id.btn_check) {
             if (isTranslated) {
                 showFirstWord();
             } else {
@@ -227,16 +224,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         if (v.getId() == R.id.btn_download) {
             AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-            alertDialogBuilder.setMessage("Are you sure, You wanted to download your new words!");
+            alertDialogBuilder.setMessage(getString(R.string.download_message));
 
-            alertDialogBuilder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            alertDialogBuilder.setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     simpleFrameWork();
                 }
             });
 
-            alertDialogBuilder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            alertDialogBuilder.setNegativeButton(getString(R.string.no), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                 }
@@ -280,5 +277,4 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
     }
-
 }

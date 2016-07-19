@@ -22,15 +22,15 @@
         android:id="@+id/btn_know"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/btn_check_it"
-        android:layout_alignEnd="@+id/btn_check_it"
+        android:layout_above="@+id/btn_check"
+        android:layout_alignEnd="@+id/btn_check"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_alignRight="@+id/btn_check_it"
+        android:layout_alignRight="@+id/btn_check"
         android:text="@string/know" />
 
     <Button
-        android:id="@+id/btn_check_it"
+        android:id="@+id/btn_check"
         android:layout_width="170dp"
         android:layout_height="wrap_content"
         android:layout_above="@+id/btn_next"
@@ -38,7 +38,7 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentStart="true"
-        android:text="@string/check_it" />
+        android:text="@string/check" />
 
     <Button
         android:id="@+id/btn_back"
