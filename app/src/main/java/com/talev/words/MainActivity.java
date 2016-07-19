@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             if (kvtml != null) {
                 words.clear();
-                for (int i = 0; i < kvtml.entries.size(); i++) {
+                for (int i = 0; i < 10; i++) {
                     if (kvtml.entries.get(i).translations.get(0).text != null && kvtml.entries.get(i).translations.get(1).text != null) {
                         words.add(new Word(kvtml.entries.get(i).translations.get(0).text, kvtml.entries.get(i).translations.get(1).text));
                     }
@@ -153,6 +153,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
             tvWord.setText(words.get(count).getWord1());
             isTranslated = false;
+        } else {
+            tvWord.setText("");
         }
     }
 
@@ -165,6 +167,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
             tvWord.setText(words.get(count).getWord2());
             isTranslated = true;
+        } else {
+            tvWord.setText("");
         }
     }
 
@@ -219,11 +223,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         if (v.getId() == R.id.btn_know) {
-            words.remove(count);
-            if (count + 1 < words.size()) {
-                refresh();
+            if (words.size() > 0) {
+                words.remove(count);
+                if (count + 1 < words.size()) {
+                    refresh();
+                } else {
+                    count = words.size() - 1;
+                    refresh();
+                }
             } else {
-                count = words.size() - 1;
                 refresh();
             }
         }
