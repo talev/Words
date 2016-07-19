@@ -1,11 +1,13 @@
 package com.talev.words;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -14,7 +16,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -51,6 +52,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private DefaultHttpClient client = new DefaultHttpClient();
     private SharedPreferences sharedpreferences;
+    private ProgressDialog progressDialog;
     private int count = 0;
     private int totalWords = 0;
     private boolean isTranslated = false;
@@ -84,30 +86,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         loadFileWords();
         refresh();
-    }
-
-    public void simpleFrameWork() {
-        try {
-            String xmlData = new String(new DownloadFile().execute(KEY_URL).get().getBytes("ISO-8859-1"), "UTF-8");
-            Serializer serializer = new Persister();
-
-            Reader reader = new StringReader(xmlData);
-            Kvtml kvtml = serializer.read(Kvtml.class, reader, false);
-
-            if (kvtml != null) {
-                words.clear();
-                for (int i = 0; i < kvtml.entries.size(); i++) {
-                    if (kvtml.entries.get(i).translations.get(0).text != null && kvtml.entries.get(i).translations.get(1).text != null) {
-                        words.add(new Word(kvtml.entries.get(i).translations.get(0).text, kvtml.entries.get(i).translations.get(1).text));
-                    }
-                }
-                totalWords = words.size();
-            }
-            count = 0;
-            refresh();
-        } catch (Exception e) {
-            Toast.makeText(this, getString(R.string.error_message), Toast.LENGTH_LONG).show();
-        }
     }
 
     public void saveFileWords() {
@@ -178,7 +156,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         alertDialogBuilder.setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                simpleFrameWork();
+                progressDialog =  ProgressDialog.show(MainActivity.this, getString(R.string.downloading), "");
+                new DownloadWordsFromServer().execute(KEY_URL);
             }
         });
 
@@ -197,7 +176,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onPause();
         saveFileWords();
         SharedPreferences.Editor editor = sharedpreferences.edit();
-//        editor.putString(TOTAL_WORDS, xmlData);
         editor.putInt(TOTAL_WORDS, totalWords);
         editor.putInt(COUNT, count);
         editor.apply();
@@ -263,23 +241,42 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private class DownloadFile extends AsyncTask<String, Void, String> {
+    private class DownloadWordsFromServer extends AsyncTask<String, String, Void> {
 
         @Override
-        protected String doInBackground(String... params) {
+        protected Void doInBackground(String... params) {
             for (String url : params) {
                 HttpGet getRequest = new HttpGet(url);
                 try {
                     HttpResponse getResponse = client.execute(getRequest);
                     final int statusCode = getResponse.getStatusLine().getStatusCode();
 
-                    if (statusCode != HttpStatus.SC_OK) {
-                        return null;
-                    }
+                    if (statusCode == HttpStatus.SC_OK) {
+                        HttpEntity getResponseEntity = getResponse.getEntity();
+                        if (getResponseEntity != null) {
+                            publishProgress("Connecting...");
+                            try {
+                                String xmlData = new String(EntityUtils.toString(getResponseEntity).getBytes("ISO-8859-1"), "UTF-8");
+                                Serializer serializer = new Persister();
 
-                    HttpEntity getResponseEntity = getResponse.getEntity();
-                    if (getResponseEntity != null) {
-                        return EntityUtils.toString(getResponseEntity);
+                                Reader reader = new StringReader(xmlData);
+                                Kvtml kvtml = serializer.read(Kvtml.class, reader, false);
+
+                                if (kvtml != null) {
+                                    words.clear();
+                                    for (int i = 0; i < kvtml.entries.size(); i++) {
+                                        if (kvtml.entries.get(i).translations.get(0).text != null && kvtml.entries.get(i).translations.get(1).text != null) {
+                                            words.add(new Word(kvtml.entries.get(i).translations.get(0).text, kvtml.entries.get(i).translations.get(1).text));
+                                        }
+                                        publishProgress("Done: " + String.valueOf(i + 1) + " from " + String.valueOf(kvtml.entries.size()));
+                                    }
+                                    totalWords = words.size();
+                                }
+                                count = 0;
+                            } catch (Exception e) {
+                                Log.w(getClass().getSimpleName(), "Error for URL " + url, e);
+                            }
+                        }
                     }
                 } catch (IOException e) {
                     getRequest.abort();
@@ -291,9 +288,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
+        protected void onProgressUpdate(String... values) {
+            super.onProgressUpdate(values);
+            progressDialog.setMessage(values[0]);
         }
 
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            progressDialog.hide();
+            refresh();
+        }
     }
 }

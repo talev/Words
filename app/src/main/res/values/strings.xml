@@ -10,4 +10,5 @@
     <string name="no">No</string>
     <string name="download_message">Are you sure, You wanted to download your new words!</string>
     <string name="error_message">Error Occurred</string>
+    <string name="downloading">Downloading</string>
 </resources>
