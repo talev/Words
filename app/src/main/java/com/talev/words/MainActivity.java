@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             if (kvtml != null) {
                 words.clear();
-                for (int i = 0; i < 10; i++) {
+                for (int i = 0; i < kvtml.entries.size(); i++) {
                     if (kvtml.entries.get(i).translations.get(0).text != null && kvtml.entries.get(i).translations.get(1).text != null) {
                         words.add(new Word(kvtml.entries.get(i).translations.get(0).text, kvtml.entries.get(i).translations.get(1).text));
                     }
