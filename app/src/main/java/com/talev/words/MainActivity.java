@@ -117,22 +117,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             String xmlData = new String(new DownloadFile().execute(KEY_URL).get().getBytes("ISO-8859-1"), "UTF-8");
             Serializer serializer = new Persister();
 
-            if (xmlData != null) {
-                Reader reader = new StringReader(xmlData);
-                Kvtml kvtml = serializer.read(Kvtml.class, reader, false);
+            Reader reader = new StringReader(xmlData);
+            Kvtml kvtml = serializer.read(Kvtml.class, reader, false);
 
-                if (kvtml != null) {
-                    words.clear();
-                    for (int i = 0; i < kvtml.entries.size(); i++) {
-                        if (kvtml.entries.get(i).translations.get(0).text != null && kvtml.entries.get(i).translations.get(1).text != null) {
-                            words.add(new Word(kvtml.entries.get(i).translations.get(0).text, kvtml.entries.get(i).translations.get(1).text));
-                        }
+            if (kvtml != null) {
+                words.clear();
+                for (int i = 0; i < kvtml.entries.size(); i++) {
+                    if (kvtml.entries.get(i).translations.get(0).text != null && kvtml.entries.get(i).translations.get(1).text != null) {
+                        words.add(new Word(kvtml.entries.get(i).translations.get(0).text, kvtml.entries.get(i).translations.get(1).text));
                     }
-                    totalWords = words.size();
                 }
-                count = 0;
-                refresh();
+                totalWords = words.size();
             }
+            count = 0;
+            refresh();
         } catch (Exception e) {
             Toast.makeText(this, getString(R.string.error_message), Toast.LENGTH_LONG).show();
         }
@@ -157,9 +155,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             words = (List<Word>) objectInputStream.readObject();
             objectInputStream.close();
             fileInputStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
+        } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
     }
@@ -181,7 +177,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //        editor.putString(TOTAL_WORDS, xmlData);
         editor.putInt(TOTAL_WORDS, totalWords);
         editor.putInt(COUNT, count);
-        editor.commit();
+        editor.apply();
     }
 
     @Override
