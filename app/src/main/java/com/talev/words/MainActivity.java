@@ -9,6 +9,8 @@ import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -47,7 +49,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button btnCheck;
     private Button btnNext;
     private Button btnBack;
-    private Button btnDownload;
 
     private DefaultHttpClient client = new DefaultHttpClient();
     private SharedPreferences sharedpreferences;
@@ -67,37 +68,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnCheck = (Button) findViewById(R.id.btn_check);
         btnNext = (Button) findViewById(R.id.btn_next);
         btnBack = (Button) findViewById(R.id.btn_back);
-        btnDownload = (Button) findViewById(R.id.btn_download);
 
         btnKnow.setOnClickListener(this);
         btnCheck.setOnClickListener(this);
         btnBack.setOnClickListener(this);
         btnNext.setOnClickListener(this);
-        btnDownload.setOnClickListener(this);
-    }
-
-    private void showFirstWord() {
-        if (words.size() > 0) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                tvWord.setTextColor(getResources().getColor(R.color.colorAccent, getTheme()));
-            } else {
-                tvWord.setTextColor(getResources().getColor(R.color.colorAccent));
-            }
-            tvWord.setText(words.get(count).getWord1());
-            isTranslated = false;
-        }
-    }
-
-    private void showSecondWord() {
-        if (words.size() > 0) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                tvWord.setTextColor(getResources().getColor(R.color.colorPrimaryDark, getTheme()));
-            } else {
-                tvWord.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
-            }
-            tvWord.setText(words.get(count).getWord2());
-            isTranslated = true;
-        }
     }
 
     @Override
@@ -169,6 +144,51 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         showFirstWord();
     }
 
+    private void showFirstWord() {
+        if (words.size() > 0) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                tvWord.setTextColor(getResources().getColor(R.color.colorAccent, getTheme()));
+            } else {
+                tvWord.setTextColor(getResources().getColor(R.color.colorAccent));
+            }
+            tvWord.setText(words.get(count).getWord1());
+            isTranslated = false;
+        }
+    }
+
+    private void showSecondWord() {
+        if (words.size() > 0) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                tvWord.setTextColor(getResources().getColor(R.color.colorPrimaryDark, getTheme()));
+            } else {
+                tvWord.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
+            }
+            tvWord.setText(words.get(count).getWord2());
+            isTranslated = true;
+        }
+    }
+
+    private void alertDialogDownload() {
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setMessage(getString(R.string.download_message));
+
+        alertDialogBuilder.setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                simpleFrameWork();
+            }
+        });
+
+        alertDialogBuilder.setNegativeButton(getString(R.string.no), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+            }
+        });
+
+        AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
+    }
+
     @Override
     protected void onPause() {
         super.onPause();
@@ -178,6 +198,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         editor.putInt(TOTAL_WORDS, totalWords);
         editor.putInt(COUNT, count);
         editor.apply();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_downloads) {
+            alertDialogDownload();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -217,26 +253,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     refresh();
                 }
             }
-        }
-        if (v.getId() == R.id.btn_download) {
-            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-            alertDialogBuilder.setMessage(getString(R.string.download_message));
-
-            alertDialogBuilder.setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    simpleFrameWork();
-                }
-            });
-
-            alertDialogBuilder.setNegativeButton(getString(R.string.no), new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                }
-            });
-
-            AlertDialog alertDialog = alertDialogBuilder.create();
-            alertDialog.show();
         }
     }
 
