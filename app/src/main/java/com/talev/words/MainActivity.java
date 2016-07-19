@@ -42,7 +42,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static final String TOTAL_WORDS = "TotalWords";
     public static final String COUNT = "Count";
     public static final String SPACE = " ";
-    public static final String CURRENT_STATE = "CurrentState";
 
     private TextView tvWord;
     private Button btnKnow;
@@ -78,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onResume() {
         super.onResume();
-        sharedpreferences = getSharedPreferences(CURRENT_STATE, Context.MODE_PRIVATE);
+        sharedpreferences = getPreferences(Context.MODE_PRIVATE);
 //        xmlData = sharedpreferences.getString(TOTAL_WORDS, null);
         totalWords = sharedpreferences.getInt(TOTAL_WORDS, 0);
         count = sharedpreferences.getInt(COUNT, 0);
