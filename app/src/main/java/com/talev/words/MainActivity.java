@@ -15,6 +15,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -33,6 +34,7 @@ import java.io.ObjectOutputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -44,7 +46,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static final String SPACE = " ";
 
     private TextView tvWord;
-    private Button btnKnow;
+    private Button btnIKnowIt;
     private Button btnCheck;
     private Button btnNext;
     private Button btnBack;
@@ -57,6 +59,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private boolean isTranslated = false;
 
     private List<Word> words = new ArrayList<>();
+    private List<Word> knownWords = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,12 +67,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
 
         tvWord = (TextView) findViewById(R.id.tv_word);
-        btnKnow = (Button) findViewById(R.id.btn_know);
+        btnIKnowIt = (Button) findViewById(R.id.btn_i_know_it);
         btnCheck = (Button) findViewById(R.id.btn_check);
         btnNext = (Button) findViewById(R.id.btn_next);
         btnBack = (Button) findViewById(R.id.btn_back);
 
-        btnKnow.setOnClickListener(this);
+        btnIKnowIt.setOnClickListener(this);
         btnCheck.setOnClickListener(this);
         btnBack.setOnClickListener(this);
         btnNext.setOnClickListener(this);
@@ -79,7 +82,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onResume() {
         super.onResume();
         sharedpreferences = getPreferences(Context.MODE_PRIVATE);
-//        xmlData = sharedpreferences.getString(TOTAL_WORDS, null);
         totalWords = sharedpreferences.getInt(TOTAL_WORDS, 0);
         count = sharedpreferences.getInt(COUNT, 0);
 
@@ -92,6 +94,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             FileOutputStream outputStream = openFileOutput(KEY_FILE_NAME, Context.MODE_PRIVATE);
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
             objectOutputStream.writeObject(words);
+            objectOutputStream.writeObject(knownWords);
             objectOutputStream.close();
             outputStream.close();
         } catch (IOException e) {
@@ -104,6 +107,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             FileInputStream fileInputStream = openFileInput(KEY_FILE_NAME);
             ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
             words = (List<Word>) objectInputStream.readObject();
+            knownWords = (List<Word>) objectInputStream.readObject();
             objectInputStream.close();
             fileInputStream.close();
         } catch (IOException | ClassNotFoundException e) {
@@ -170,6 +174,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         alertDialog.show();
     }
 
+    private void alertDialogClear() {
+        AlertDialog.Builder alertDialogBulder = new AlertDialog.Builder(this);
+        alertDialogBulder.setMessage(getString(R.string.clear_message));
+
+        alertDialogBulder.setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                knownWords.clear();
+            }
+        });
+
+        alertDialogBulder.setNegativeButton(getString(R.string.no), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+            }
+        });
+
+        AlertDialog alertDialog = alertDialogBulder.create();
+        alertDialog.show();
+    }
+
     @Override
     protected void onPause() {
         super.onPause();
@@ -189,8 +215,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
+        if (id == R.id.test) {
+            String sentence = "knownWords.size(): " + knownWords.size() + "\nwords.size(): " + words.size() + "\ntotalWords: " + totalWords;
+            Toast.makeText(this, sentence, Toast.LENGTH_LONG).show();
+            return true;
+        }
+        if (id == R.id.action_know) {
+//            startActivity(new Intent());
+            return true;
+        }
         if (id == R.id.action_downloads) {
             alertDialogDownload();
+            return true;
+        }
+        if (id == R.id.action_clear) {
+            alertDialogClear();
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -198,8 +237,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
-        if (v.getId() == R.id.btn_know) {
+        if (v.getId() == R.id.btn_i_know_it) {
             if (words.size() > 0) {
+                Word word = words.get(count);
+                word.setDate(new Date());
+                word.setLearned(true);
+                knownWords.add(word);
                 words.remove(count);
                 if (count + 1 < words.size()) {
                     refresh();
@@ -269,7 +312,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                         }
                                         publishProgress("Done: " + String.valueOf(i + 1) + " from " + String.valueOf(kvtml.entries.size()));
                                     }
+
                                     totalWords = words.size();
+
+                                    // TODO: Create search for duplicate words!
+                                    // Search for known words
+                                    List<Word> tempWords = new ArrayList<>();
+                                    for (Word knownWord: knownWords) {
+                                        for (Word word: words) {
+                                            if (knownWord.getWord().equals(word.getWord())) {
+                                                tempWords.add(word);
+                                            }
+                                        }
+                                    }
+                                    // Remove all known words
+                                    for (Word word: tempWords) {
+                                        words.remove(word);
+                                    }
                                 }
                                 count = 0;
                             } catch (Exception e) {

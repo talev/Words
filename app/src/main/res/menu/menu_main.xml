@@ -2,8 +2,23 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
+        android:id="@+id/test"
+        android:orderInCategory="90"
+        android:title="Test"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_know"
+        android:orderInCategory="90"
+        android:title="@string/known_words"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/action_downloads"
         android:orderInCategory="100"
         android:title="@string/download"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_clear"
+        android:orderInCategory="110"
+        android:title="@string/clear"
         app:showAsAction="never" />
 </menu>
