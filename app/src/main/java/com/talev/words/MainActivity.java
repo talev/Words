@@ -341,9 +341,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                                         + words.get(j).getWordTranslated() + "\n";
                                                 Log.i(DUPLICATION_WORDS_LOG_TAG, "Duplication word: "
                                                         + words.get(j).getWord() + " <=> "
-                                                        + words.get(j).getWordTranslated() + "\n");
+                                                        + words.get(j).getWordTranslated() + "\n"
+                                                );
                                                 words.remove(j);
                                                 j--;
+                                            }
+                                        }
+                                    }
+
+                                    // Search all duplicated words and concatenation their translation
+                                    for (int i = 0; i < words.size(); i++) {
+                                        for (int j = i + 1; j < words.size(); j++) {
+                                            if (words.get(i).getWord().equals(words.get(j).getWord())) {
+
+                                                Log.i(DUPLICATION_WORDS_LOG_TAG, "Concatenations word: "
+                                                        + words.get(j).getWord() + " <=> "
+                                                        + words.get(j).getWordTranslated() + ", "
+                                                        + words.get(i).getWordTranslated()
+                                                        + "\n"
+                                                );
+//                                                words.get(j).setWordTranslated(words.get(j).getWordTranslated());
+//                                                j--;
                                             }
                                         }
                                     }
