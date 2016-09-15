@@ -35,10 +35,14 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
+    public static final String DUPLICATION_WORDS_LOG_TAG = "Duplication";
     public static final String KEY_URL = "http://80.72.69.142/MyNewWord.kvtml";
     public static final String KEY_FILE_NAME = "UnknownWords";
     public static final String TOTAL_WORDS = "TotalWords";
@@ -54,6 +58,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private DefaultHttpClient client = new DefaultHttpClient();
     private SharedPreferences sharedpreferences;
     private ProgressDialog progressDialog;
+    private String duplicatedWords;
     private int count = 0;
     private int totalWords = 0;
     private boolean isTranslated = false;
@@ -95,6 +100,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
             objectOutputStream.writeObject(words);
             objectOutputStream.writeObject(knownWords);
+            objectOutputStream.writeObject(duplicatedWords);
             objectOutputStream.close();
             outputStream.close();
         } catch (IOException e) {
@@ -108,6 +114,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
             words = (List<Word>) objectInputStream.readObject();
             knownWords = (List<Word>) objectInputStream.readObject();
+            duplicatedWords = (String) objectInputStream.readObject();
             objectInputStream.close();
             fileInputStream.close();
         } catch (IOException | ClassNotFoundException e) {
@@ -117,7 +124,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void refresh() {
         if (words.size() > 0) {
-            setTitle(getString(R.string.app_name) + SPACE + String.valueOf(count + 1) + "/" + words.size() + SPACE + "(" + totalWords + ")");
+            setTitle(getString(R.string.app_name) + SPACE + String.valueOf(count + 1)
+                    + "/" + words.size() + SPACE + "(" + totalWords + ")");
         } else {
             setTitle(getString(R.string.app_name));
         }
@@ -159,7 +167,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         alertDialogBuilder.setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                progressDialog =  ProgressDialog.show(MainActivity.this, getString(R.string.downloading), "");
+                progressDialog = ProgressDialog.show(MainActivity.this, getString(R.string.downloading), "");
                 new DownloadWordsFromServer().execute(KEY_URL);
             }
         });
@@ -216,8 +224,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.test) {
-            String sentence = "knownWords.size(): " + knownWords.size() + "\nwords.size(): " + words.size() + "\ntotalWords: " + totalWords;
+            String sentence = "knownWords.size(): " + knownWords.size()
+                    + "\nwords.size(): " + words.size() + "\ntotalWords: " + totalWords;
             Toast.makeText(this, sentence, Toast.LENGTH_LONG).show();
+
+            if (duplicatedWords != null) {
+                Toast.makeText(getApplicationContext(), duplicatedWords, Toast.LENGTH_LONG).show();
+            }
             return true;
         }
         if (id == R.id.action_know) {
@@ -298,7 +311,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         if (getResponseEntity != null) {
                             publishProgress("Connecting...");
                             try {
-                                String xmlData = new String(EntityUtils.toString(getResponseEntity).getBytes("ISO-8859-1"), "UTF-8");
+                                String xmlData = new String(EntityUtils.toString(getResponseEntity)
+                                        .getBytes("ISO-8859-1"), "UTF-8");
                                 Serializer serializer = new Persister();
 
                                 Reader reader = new StringReader(xmlData);
@@ -307,26 +321,69 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 if (kvtml != null) {
                                     words.clear();
                                     for (int i = 0; i < kvtml.entries.size(); i++) {
-                                        if (kvtml.entries.get(i).translations.get(0).text != null && kvtml.entries.get(i).translations.get(1).text != null) {
-                                            words.add(new Word(kvtml.entries.get(i).translations.get(0).text, kvtml.entries.get(i).translations.get(1).text));
+                                        if (kvtml.entries.get(i).translations.get(0).text != null
+                                                && kvtml.entries.get(i).translations.get(1).text != null) {
+                                            words.add(new Word(
+                                                    kvtml.entries.get(i).translations.get(0).text,
+                                                    kvtml.entries.get(i).translations.get(1).text));
                                         }
-                                        publishProgress("Done: " + String.valueOf(i + 1) + " from " + String.valueOf(kvtml.entries.size()));
+                                        publishProgress("Done: " + String.valueOf(i + 1)
+                                                + " from " + String.valueOf(kvtml.entries.size()));
+                                    }
+
+                                    // Search and remove all duplicated words and show it in Toast
+                                    for (int i = 0; i < words.size(); i++) {
+                                        for (int j = i + 1; j < words.size(); j++) {
+                                            if (words.get(i).getWord().equals(words.get(j).getWord())
+                                                    && words.get(i).getWordTranslated()
+                                                    .equals(words.get(j).getWordTranslated())) {
+                                                duplicatedWords += words.get(j).getWord() + " <=> "
+                                                        + words.get(j).getWordTranslated() + "\n";
+                                                Log.i(DUPLICATION_WORDS_LOG_TAG, "Duplication word: "
+                                                        + words.get(j).getWord() + " <=> "
+                                                        + words.get(j).getWordTranslated() + "\n"
+                                                );
+                                                words.remove(j);
+                                                j--;
+                                            }
+                                        }
+                                    }
+
+                                    // Search all duplicated words and concatenation their translation
+                                    for (int i = 0; i < words.size(); i++) {
+                                        for (int j = i + 1; j < words.size(); j++) {
+                                            if (words.get(i).getWord().equals(words.get(j).getWord())) {
+
+                                                Log.i(DUPLICATION_WORDS_LOG_TAG, "Concatenations word: "
+                                                        + words.get(j).getWord() + " <=> "
+                                                        + words.get(j).getWordTranslated() + ", "
+                                                        + words.get(i).getWordTranslated()
+                                                        + "\n"
+                                                );
+//                                                words.get(j).setWordTranslated(words.get(j).getWordTranslated());
+//                                                j--;
+                                            }
+                                        }
                                     }
 
                                     totalWords = words.size();
 
-                                    // TODO: Create search for duplicate words!
                                     // Search for known words
+                                    publishProgress("Check for known words...");
                                     List<Word> tempWords = new ArrayList<>();
-                                    for (Word knownWord: knownWords) {
-                                        for (Word word: words) {
-                                            if (knownWord.getWord().equals(word.getWord())) {
+                                    for (Word knownWord : knownWords) {
+                                        for (Word word : words) {
+                                            if (knownWord.getWord().equals(word.getWord())
+                                                    && knownWord.getWordTranslated().equals(
+                                                    word.getWordTranslated())) {
+
                                                 tempWords.add(word);
                                             }
                                         }
                                     }
                                     // Remove all known words
-                                    for (Word word: tempWords) {
+                                    publishProgress("Remove all known words...");
+                                    for (Word word : tempWords) {
                                         words.remove(word);
                                     }
                                 }
