@@ -55,7 +55,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button btnNext;
     private Button btnBack;
 
-    private DefaultHttpClient client = new DefaultHttpClient();
     private SharedPreferences sharedpreferences;
     private ProgressDialog progressDialog;
     private String duplicatedWords;
@@ -297,6 +296,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private class DownloadWordsFromServer extends AsyncTask<String, String, Void> {
+
+        private DefaultHttpClient client = new DefaultHttpClient();
 
         @Override
         protected Void doInBackground(String... params) {
