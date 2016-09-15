@@ -13,9 +13,9 @@ public class Word implements Serializable {
     private String wordTranslated;
     private Date date;
 
-    public Word(String word1, String word2) {
-        this.word = word1;
-        this.wordTranslated = word2;
+    public Word(String word, String wordTranslated) {
+        this.word = word;
+        this.wordTranslated = wordTranslated;
     }
 
     public boolean isLearned() {
