@@ -35,10 +35,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -47,6 +44,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static final String KEY_FILE_NAME = "UnknownWords";
     public static final String TOTAL_WORDS = "TotalWords";
     public static final String COUNT = "Count";
+    public static final String COUNT_KNOWN = "CountKnown";
     public static final String SPACE = " ";
 
     private TextView tvWord;
@@ -59,8 +57,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ProgressDialog progressDialog;
     private String duplicatedWords;
     private int count = 0;
+    private int countKnown = 0;
     private int totalWords = 0;
     private boolean isTranslated = false;
+    private boolean isShowUnknownWords = true;
 
     private List<Word> words = new ArrayList<>();
     private List<Word> knownWords = new ArrayList<>();
@@ -88,6 +88,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         sharedpreferences = getPreferences(Context.MODE_PRIVATE);
         totalWords = sharedpreferences.getInt(TOTAL_WORDS, 0);
         count = sharedpreferences.getInt(COUNT, 0);
+        countKnown = sharedpreferences.getInt(COUNT_KNOWN, 0);
 
         loadFileWords();
         refresh();
@@ -122,40 +123,78 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void refresh() {
-        if (words.size() > 0) {
-            setTitle(getString(R.string.app_name) + SPACE + String.valueOf(count + 1)
-                    + "/" + words.size() + SPACE + "(" + totalWords + ")");
+        if (isShowUnknownWords) {
+            if (words.size() > 0) {
+                setTitle(getString(R.string.app_name) + SPACE + String.valueOf(count + 1)
+                        + "/" + words.size() + SPACE + "(" + totalWords + ")");
+            } else {
+                setTitle(getString(R.string.app_name));
+            }
+            showFirstWord();
         } else {
-            setTitle(getString(R.string.app_name));
+            if (knownWords.size() > 0) {
+                setTitle("Known " + getString(R.string.app_name) + SPACE + String.valueOf(countKnown + 1)
+                        + "/" + knownWords.size() + SPACE + "(" + totalWords + ")");
+            } else {
+                setTitle("Known " + getString(R.string.app_name));
+            }
+            showFirstWord();
         }
-        showFirstWord();
     }
 
     private void showFirstWord() {
-        if (words.size() > 0) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                tvWord.setTextColor(getResources().getColor(R.color.colorAccent, getTheme()));
+        if (isShowUnknownWords) {
+            if (words.size() > 0) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    tvWord.setTextColor(getResources().getColor(R.color.colorAccent, getTheme()));
+                } else {
+                    tvWord.setTextColor(getResources().getColor(R.color.colorAccent));
+                }
+                tvWord.setText(words.get(count).getWord());
+                isTranslated = false;
             } else {
-                tvWord.setTextColor(getResources().getColor(R.color.colorAccent));
+                tvWord.setText("");
             }
-            tvWord.setText(words.get(count).getWord());
-            isTranslated = false;
         } else {
-            tvWord.setText("");
+            if (knownWords.size() > 0) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    tvWord.setTextColor(getResources().getColor(R.color.colorAccent, getTheme()));
+                } else {
+                    tvWord.setTextColor(getResources().getColor(R.color.colorAccent));
+                }
+                tvWord.setText(knownWords.get(countKnown).getWord());
+                isTranslated = false;
+            } else {
+                tvWord.setText("");
+            }
         }
     }
 
     private void showSecondWord() {
-        if (words.size() > 0) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                tvWord.setTextColor(getResources().getColor(R.color.colorPrimaryDark, getTheme()));
+        if (isShowUnknownWords) {
+            if (words.size() > 0) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    tvWord.setTextColor(getResources().getColor(R.color.colorPrimaryDark, getTheme()));
+                } else {
+                    tvWord.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
+                }
+                tvWord.setText(words.get(count).getWordTranslated());
+                isTranslated = true;
             } else {
-                tvWord.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
+                tvWord.setText("");
             }
-            tvWord.setText(words.get(count).getWordTranslated());
-            isTranslated = true;
         } else {
-            tvWord.setText("");
+            if (knownWords.size() > 0) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    tvWord.setTextColor(getResources().getColor(R.color.colorPrimaryDark, getTheme()));
+                } else {
+                    tvWord.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
+                }
+                tvWord.setText(knownWords.get(countKnown).getWordTranslated());
+                isTranslated = true;
+            } else {
+                tvWord.setText("");
+            }
         }
     }
 
@@ -189,6 +228,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 knownWords.clear();
+                refresh();
             }
         });
 
@@ -210,6 +250,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         SharedPreferences.Editor editor = sharedpreferences.edit();
         editor.putInt(TOTAL_WORDS, totalWords);
         editor.putInt(COUNT, count);
+        editor.putInt(COUNT_KNOWN, countKnown);
         editor.apply();
     }
 
@@ -233,7 +274,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             return true;
         }
         if (id == R.id.action_know) {
-//            startActivity(new Intent());
+            if (isShowUnknownWords) {
+                isShowUnknownWords = false;
+                refresh();
+                item.setTitle("Unknown words");
+                btnIKnowIt.setText("I forget it");
+            } else {
+                isShowUnknownWords = true;
+                refresh();
+                item.setTitle(getString(R.string.known_words));
+                btnIKnowIt.setText(getString(R.string.i_know_it));
+            }
             return true;
         }
         if (id == R.id.action_downloads) {
@@ -249,47 +300,89 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
-        if (v.getId() == R.id.btn_i_know_it) {
-            if (words.size() > 0) {
-                Word word = words.get(count);
-                word.setDate(new Date());
-                word.setLearned(true);
-                knownWords.add(word);
-                words.remove(count);
-                if (count + 1 < words.size()) {
+        if (isShowUnknownWords) {
+            if (v.getId() == R.id.btn_i_know_it) {
+                if (words.size() > 0) {
+                    Word word = words.get(count);
+                    word.setDate(new Date());
+                    word.setLearned(true);
+                    knownWords.add(word);
+                    words.remove(count);
+                    if (count + 1 < words.size()) {
+                        refresh();
+                    } else {
+                        count = words.size() - 1;
+                        refresh();
+                    }
+                } else {
+                    refresh();
+                }
+            }
+            if (v.getId() == R.id.btn_check) {
+                if (isTranslated) {
+                    showFirstWord();
+                } else {
+                    showSecondWord();
+                }
+            }
+            if (v.getId() == R.id.btn_back) {
+                if (count > 0) {
+                    count--;
                     refresh();
                 } else {
                     count = words.size() - 1;
                     refresh();
                 }
-            } else {
-                refresh();
             }
-        }
-        if (v.getId() == R.id.btn_check) {
-            if (isTranslated) {
-                showFirstWord();
-            } else {
-                showSecondWord();
+            if (v.getId() == R.id.btn_next) {
+                if (words != null) {
+                    if (count + 1 < words.size()) {
+                        count++;
+                        refresh();
+                    } else {
+                        count = 0;
+                        refresh();
+                    }
+                }
             }
-        }
-        if (v.getId() == R.id.btn_back) {
-            if (count > 0) {
-                count--;
-                refresh();
-            } else {
-                count = words.size() - 1;
-                refresh();
+        } else {
+            if (v.getId() == R.id.btn_i_know_it) {
+                if (knownWords.size() > 0) {
+                    if (countKnown + 1 < knownWords.size()) {
+                        refresh();
+                    } else {
+                        countKnown = knownWords.size() - 1;
+                        refresh();
+                    }
+                } else {
+                    refresh();
+                }
             }
-        }
-        if (v.getId() == R.id.btn_next) {
-            if (words != null) {
-                if (count + 1 < words.size()) {
-                    count++;
+            if (v.getId() == R.id.btn_check) {
+                if (isTranslated) {
+                    showFirstWord();
+                } else {
+                    showSecondWord();
+                }
+            }
+            if (v.getId() == R.id.btn_back) {
+                if (countKnown > 0) {
+                    countKnown--;
                     refresh();
                 } else {
-                    count = 0;
+                    countKnown = knownWords.size() - 1;
                     refresh();
+                }
+            }
+            if (v.getId() == R.id.btn_next) {
+                if (knownWords != null) {
+                    if (countKnown + 1 < knownWords.size()) {
+                        countKnown++;
+                        refresh();
+                    } else {
+                        countKnown = 0;
+                        refresh();
+                    }
                 }
             }
         }
