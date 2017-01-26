@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.util.Patterns;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -413,7 +412,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 isShowUnknownWords = false;
                 refresh();
                 item.setTitle("Unknown words");
-                btnIKnowIt.setText("I forget it");
+                btnIKnowIt.setText("I forgot it");
             } else {
                 isShowUnknownWords = true;
                 refresh();
@@ -461,7 +460,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         } else {
             if (v.getId() == R.id.btn_i_know_it) {
-                refresh();
+                if (words.size() > 0) {
+                    Word word = words.get(countKnown);
+                    word.setLearned(false);
+                    nextWord();
+                } else {
+                    refresh();
+                }
             }
             if (v.getId() == R.id.btn_check) {
                 if (isTranslated) {
