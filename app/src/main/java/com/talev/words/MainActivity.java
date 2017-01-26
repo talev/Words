@@ -363,6 +363,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         alertDialogBulder.setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                for (int i = 0; i < words.size(); i++) {
+                    if (words.get(i).isLearned()) {
+                        words.get(i).setDate(null);
+                        words.get(i).setLearned(false);
+                    }
+                }
                 refresh();
             }
         });
