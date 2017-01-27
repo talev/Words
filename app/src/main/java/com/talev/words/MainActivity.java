@@ -42,7 +42,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static final String DUPLICATION_WORDS_LOG_TAG = "Duplication";
     public static final String KEY_URL = "http://80.72.69.142/MyNewWord.kvtml";
     public static final String KEY_FILE_NAME = "UnknownWords";
-    public static final String TOTAL_WORDS = "TotalWords";
     public static final String COUNT = "Count";
     public static final String COUNT_KNOWN = "CountKnown";
     public static final String SPACE = " ";
@@ -58,12 +57,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private String duplicatedWords;
     private int count = 0;
     private int countKnown = 0;
-    private int totalWords = 0;
     private boolean isTranslated = false;
     private boolean isShowUnknownWords = true;
 
     private List<Word> words = new ArrayList<>();
-    private List<Word> knownWords = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,7 +83,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onResume() {
         super.onResume();
         sharedpreferences = getPreferences(Context.MODE_PRIVATE);
-        totalWords = sharedpreferences.getInt(TOTAL_WORDS, 0);
         count = sharedpreferences.getInt(COUNT, 0);
         countKnown = sharedpreferences.getInt(COUNT_KNOWN, 0);
 
@@ -99,7 +95,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             FileOutputStream outputStream = openFileOutput(KEY_FILE_NAME, Context.MODE_PRIVATE);
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
             objectOutputStream.writeObject(words);
-            objectOutputStream.writeObject(knownWords);
             objectOutputStream.writeObject(duplicatedWords);
             objectOutputStream.close();
             outputStream.close();
@@ -113,7 +108,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             FileInputStream fileInputStream = openFileInput(KEY_FILE_NAME);
             ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
             words = (List<Word>) objectInputStream.readObject();
-            knownWords = (List<Word>) objectInputStream.readObject();
             duplicatedWords = (String) objectInputStream.readObject();
             objectInputStream.close();
             fileInputStream.close();
@@ -126,19 +120,161 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (isShowUnknownWords) {
             if (words.size() > 0) {
                 setTitle(getString(R.string.app_name) + SPACE + String.valueOf(count + 1)
-                        + "/" + words.size() + SPACE + "(" + totalWords + ")");
+                        + "/" + words.size() + SPACE + "(" + getUnknownWordNumbers() + ")");
             } else {
                 setTitle(getString(R.string.app_name));
             }
             showFirstWord();
         } else {
-            if (knownWords.size() > 0) {
-                setTitle("Known " + getString(R.string.app_name) + SPACE + String.valueOf(countKnown + 1)
-                        + "/" + knownWords.size() + SPACE + "(" + totalWords + ")");
+            if (words.size() > 0) {
+                setTitle(getString(R.string.known_words) + SPACE + String.valueOf(countKnown + 1)
+                        + "/" + words.size() + SPACE + "(" + getKnownWordNumbers() + ")");
             } else {
-                setTitle("Known " + getString(R.string.app_name));
+                setTitle(getString(R.string.known_words));
             }
             showFirstWord();
+        }
+    }
+
+    private int getKnownWordNumbers() {
+        int result = 0;
+        for (Word word : words) {
+            if (word.isLearned()) {
+                result++;
+            }
+        }
+
+        return result;
+    }
+
+    private int getUnknownWordNumbers() {
+        int result = 0;
+        for (Word word : words) {
+            if (!word.isLearned()) {
+                result++;
+            }
+        }
+
+        return result;
+    }
+
+    private void nextWord() {
+        if (isShowUnknownWords) {
+            if (words != null && words.size() > 0) {
+                if (count + 1 < words.size()) {
+                    count++;
+                    if (words.get(count).isLearned()) {
+                        for (int i = count; i < words.size(); i++) {
+                            if (words.get(i).isLearned() && i + 1 < words.size()) {
+                                count++;
+                                if (!words.get(i + 1).isLearned()) {
+                                    break;
+                                }
+                            } else {
+                                count = 0;
+                                refresh();
+                                if (words.get(count).isLearned()) {
+                                    nextWord();
+                                }
+                            }
+                        }
+                    }
+                    refresh();
+                } else {
+                    count = 0;
+                    refresh();
+                    if (words.get(count).isLearned()) {
+                        nextWord();
+                    }
+                }
+            }
+        } else {
+            if (words != null && words.size() > 0) {
+                if (countKnown + 1 < words.size()) {
+                    countKnown++;
+                    if (!words.get(countKnown).isLearned()) {
+                        for (int i = countKnown; i < words.size(); i++) {
+                            if (!words.get(i).isLearned() && i + 1 < words.size()) {
+                                countKnown++;
+                                if (words.get(i + 1).isLearned()) {
+                                    break;
+                                }
+                            } else {
+                                countKnown = 0;
+                                refresh();
+                                if (!words.get(countKnown).isLearned()) {
+                                    nextWord();
+                                }
+                            }
+                        }
+                    }
+                    refresh();
+                } else {
+                    countKnown = 0;
+                    refresh();
+                    if (!words.get(countKnown).isLearned()) {
+                        nextWord();
+                    }
+                }
+            }
+        }
+    }
+
+    private void backWord() {
+        if (isShowUnknownWords) {
+            if (count > 0) {
+                count--;
+                if (words.get(count).isLearned()) {
+                    if (count > 0) {
+                        for (int i = count; i > 0; i--) {
+                            if (words.get(i).isLearned()) {
+                                count--;
+                                if (count > 0) {
+                                    if (!words.get(i - 1).isLearned()) {
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        count = words.size() - 1;
+                        if (words.get(count).isLearned()) {
+                            backWord();
+                        }
+                    }
+                }
+                refresh();
+            } else {
+                count = words.size() - 1;
+                refresh();
+            }
+        } else {
+            if (countKnown > 0) {
+                countKnown--;
+                if (!words.get(countKnown).isLearned()) {
+                    if (countKnown > 0) {
+                        for (int i = countKnown; i > 0; i--) {
+                            if (!words.get(i).isLearned()) {
+                                countKnown--;
+                                if (countKnown > 0) {
+                                    if (words.get(i - 1).isLearned()) {
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        countKnown = words.size() - 1;
+                        if (!words.get(countKnown).isLearned()) {
+                            backWord();
+                        }
+                    }
+                }
+                refresh();
+            } else {
+                countKnown = words.size() - 1;
+                refresh();
+            }
         }
     }
 
@@ -156,13 +292,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 tvWord.setText("");
             }
         } else {
-            if (knownWords.size() > 0) {
+            if (words.size() > 0) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     tvWord.setTextColor(getResources().getColor(R.color.colorAccent, getTheme()));
                 } else {
                     tvWord.setTextColor(getResources().getColor(R.color.colorAccent));
                 }
-                tvWord.setText(knownWords.get(countKnown).getWord());
+                tvWord.setText(words.get(countKnown).getWord());
                 isTranslated = false;
             } else {
                 tvWord.setText("");
@@ -184,13 +320,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 tvWord.setText("");
             }
         } else {
-            if (knownWords.size() > 0) {
+            if (words.size() > 0) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     tvWord.setTextColor(getResources().getColor(R.color.colorPrimaryDark, getTheme()));
                 } else {
                     tvWord.setTextColor(getResources().getColor(R.color.colorPrimaryDark));
                 }
-                tvWord.setText(knownWords.get(countKnown).getWordTranslated());
+                tvWord.setText(words.get(countKnown).getWordTranslated());
                 isTranslated = true;
             } else {
                 tvWord.setText("");
@@ -227,7 +363,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         alertDialogBulder.setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                knownWords.clear();
+                for (int i = 0; i < words.size(); i++) {
+                    if (words.get(i).isLearned()) {
+                        words.get(i).setDate(null);
+                        words.get(i).setLearned(false);
+                    }
+                }
                 refresh();
             }
         });
@@ -248,7 +389,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onPause();
         saveFileWords();
         SharedPreferences.Editor editor = sharedpreferences.edit();
-        editor.putInt(TOTAL_WORDS, totalWords);
         editor.putInt(COUNT, count);
         editor.putInt(COUNT_KNOWN, countKnown);
         editor.apply();
@@ -264,8 +404,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.test) {
-            String sentence = "knownWords.size(): " + knownWords.size()
-                    + "\nwords.size(): " + words.size() + "\ntotalWords: " + totalWords;
+            String sentence = "knownWords.size(): "
+                    + "\nwords.size(): " + words.size() + "\ntotalWords: ";
             Toast.makeText(this, sentence, Toast.LENGTH_LONG).show();
 
             if (duplicatedWords != null) {
@@ -278,7 +418,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 isShowUnknownWords = false;
                 refresh();
                 item.setTitle("Unknown words");
-                btnIKnowIt.setText("I forget it");
+                btnIKnowIt.setText("I forgot it");
             } else {
                 isShowUnknownWords = true;
                 refresh();
@@ -306,14 +446,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Word word = words.get(count);
                     word.setDate(new Date());
                     word.setLearned(true);
-                    knownWords.add(word);
-                    words.remove(count);
-                    if (count + 1 < words.size()) {
-                        refresh();
-                    } else {
-                        count = words.size() - 1;
-                        refresh();
-                    }
+                    nextWord();
                 } else {
                     refresh();
                 }
@@ -326,34 +459,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             }
             if (v.getId() == R.id.btn_back) {
-                if (count > 0) {
-                    count--;
-                    refresh();
-                } else {
-                    count = words.size() - 1;
-                    refresh();
-                }
+                backWord();
             }
             if (v.getId() == R.id.btn_next) {
-                if (words != null) {
-                    if (count + 1 < words.size()) {
-                        count++;
-                        refresh();
-                    } else {
-                        count = 0;
-                        refresh();
-                    }
-                }
+                nextWord();
             }
         } else {
             if (v.getId() == R.id.btn_i_know_it) {
-                if (knownWords.size() > 0) {
-                    if (countKnown + 1 < knownWords.size()) {
-                        refresh();
-                    } else {
-                        countKnown = knownWords.size() - 1;
-                        refresh();
-                    }
+                if (words.size() > 0) {
+                    Word word = words.get(countKnown);
+                    word.setLearned(false);
+                    nextWord();
                 } else {
                     refresh();
                 }
@@ -367,23 +483,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
             if (v.getId() == R.id.btn_back) {
                 if (countKnown > 0) {
-                    countKnown--;
-                    refresh();
-                } else {
-                    countKnown = knownWords.size() - 1;
-                    refresh();
+                    backWord();
                 }
             }
             if (v.getId() == R.id.btn_next) {
-                if (knownWords != null) {
-                    if (countKnown + 1 < knownWords.size()) {
-                        countKnown++;
-                        refresh();
-                    } else {
-                        countKnown = 0;
-                        refresh();
-                    }
-                }
+                nextWord();
             }
         }
     }
@@ -460,8 +564,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                         }
                                     }
 
-                                    totalWords = words.size();
-
+                                    /*
                                     // Search for known words
                                     publishProgress("Check for known words...");
                                     List<Word> tempWords = new ArrayList<>();
@@ -479,7 +582,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                     publishProgress("Remove all known words...");
                                     for (Word word : tempWords) {
                                         words.remove(word);
-                                    }
+                                    }*/
                                 }
                                 count = 0;
                             } catch (Exception e) {
