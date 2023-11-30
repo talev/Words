@@ -1,9 +1,7 @@
 package com.talev.words;
 
-import android.content.Context;
-import android.content.res.AssetManager;
 import android.os.AsyncTask;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
@@ -21,7 +19,6 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -41,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
 
         tvWord = (TextView) findViewById(R.id.word);
 
-        tvWord.setText(String.valueOf("TEST"));
+        tvWord.setText("TEST");
 
         new DownloadFile().execute();
 
@@ -77,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
                         break;
 
                     case XmlPullParser.TEXT:
-                            Log.d(TAG, "getText: " + String.valueOf(parser.getText()));
+                            Log.d(TAG, "getText: " + parser.getText());
                             text = parser.getText();
                         break;
 
