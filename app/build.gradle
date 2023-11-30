@@ -1,13 +1,15 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 23
+    compileSdkVersion 30
     buildToolsVersion "23.0.3"
+
+    namespace "com.talev.words"
 
     defaultConfig {
         applicationId "com.talev.words"
-        minSdkVersion 15
-        targetSdkVersion 23
+        minSdkVersion 30
+        targetSdkVersion 30
         versionCode 1
         versionName "1.0"
     }
@@ -20,11 +22,11 @@ android {
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:23.3.0'
-    compile 'org.jbundle.util.osgi.wrapped:org.jbundle.util.osgi.wrapped.org.apache.http.client:4.1.2'
-    compile('org.simpleframework:simple-xml:2.7.+'){
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    testImplementation 'junit:junit:4.13.2'
+    implementation 'com.android.support:appcompat-v7:23.3.0'
+    implementation 'org.jbundle.util.osgi.wrapped:org.jbundle.util.osgi.wrapped.org.apache.http.client:4.1.2'
+    implementation('org.simpleframework:simple-xml:2.7.1'){
         exclude module: 'stax'
         exclude module: 'stax-api'
         exclude module: 'xpp3'
